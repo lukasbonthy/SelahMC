@@ -1,1 +1,3033 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SelahMC | Minecraft & Eaglercraft Server</title>
+  <meta
+    name="description"
+    content="Join SelahMC on Eaglercraft, Java, or Bedrock with quick connection info, portal access, and easy copy actions."
+  />
+
+  <link rel="preconnect" href="https://fonts.cdnfonts.com" />
+  <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/minecraft-title" />
+
+  <style>
+    :root {
+      --bg-dark: #0d1117;
+      --bg-deep: #11181f;
+      --stone-1: #4d5a4a;
+      --stone-2: #364034;
+      --stone-3: #242b22;
+      --dirt-1: #6a4a30;
+      --dirt-2: #4e3622;
+      --grass-1: #88db5a;
+      --grass-2: #4ea53a;
+      --grass-3: #2e6c25;
+      --diamond-1: #efffff;
+      --diamond-2: #8cedff;
+      --diamond-3: #3ecfff;
+      --diamond-4: #1b67ea;
+      --accent-red: #d93c3c;
+      --accent-red-dark: #8e2222;
+      --gold-1: #ffe890;
+      --gold-2: #d7a82d;
+      --gold-3: #8a6113;
+      --white: #ffffff;
+      --text-main: #edf7ef;
+      --text-soft: #cfe0d3;
+      --shadow-dark: #0a0c0f;
+      --panel-shadow: 0 7px 0 #0a0d0b, 0 18px 30px rgba(0, 0, 0, 0.3);
+      --panel-shadow-big: 0 10px 0 #0a0d0b, 0 26px 38px rgba(0, 0, 0, 0.36);
+      --max-width: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text-main);
+      background: linear-gradient(180deg, #6fc0ff 0%, #7ed2ff 30%, #87d7ff 48%, #244f78 100%);
+      font-family: Arial, Helvetica, sans-serif;
+      overflow-x: hidden;
+    }
+
+    body.preloading {
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 26px 26px;
+      mix-blend-mode: soft-light;
+      opacity: 0.25;
+      z-index: 0;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,255,255,0.24), transparent 20%),
+        radial-gradient(circle at 80% 18%, rgba(255,255,255,0.16), transparent 20%),
+        linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.18) 100%);
+      z-index: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    .mc-font {
+      font-family: "Minecraft Title", Arial, sans-serif;
+      letter-spacing: 1px;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .container {
+      width: min(var(--max-width), calc(100% - 1.5rem));
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .pixel-panel {
+      position: relative;
+      background: linear-gradient(180deg, rgba(63, 76, 61, 0.96), rgba(33, 40, 31, 0.98));
+      border: 4px solid #182018;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.08), var(--panel-shadow);
+    }
+
+    .section {
+      position: relative;
+      padding: 72px 0;
+    }
+
+    .section-dark {
+      background: linear-gradient(180deg, rgba(27, 32, 29, 0.94), rgba(15, 18, 16, 0.98));
+      border-top: 4px solid #101410;
+      border-bottom: 4px solid #101410;
+    }
+
+    .terrain-divider {
+      height: 54px;
+      position: relative;
+      background: linear-gradient(180deg, #8eeb61 0 34%, #56a53e 34% 58%, #63442d 58% 100%);
+      border-top: 4px solid #1a2318;
+      border-bottom: 4px solid #1a2318;
+      overflow: hidden;
+    }
+
+    .terrain-divider::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg,
+          rgba(255,255,255,0.14) 0 6%,
+          transparent 6% 12%,
+          rgba(0,0,0,0.1) 12% 18%,
+          transparent 18% 30%,
+          rgba(255,255,255,0.08) 30% 38%,
+          transparent 38% 50%,
+          rgba(0,0,0,0.08) 50% 58%,
+          transparent 58% 72%,
+          rgba(255,255,255,0.08) 72% 80%,
+          transparent 80% 100%);
+      opacity: 0.6;
+      animation: terrainScan 8s linear infinite;
+    }
+
+    @keyframes terrainScan {
+      0% { transform: translateX(-10%); }
+      50% { transform: translateX(10%); }
+      100% { transform: translateX(-10%); }
+    }
+
+    .section-heading {
+      margin: 0 0 14px;
+      text-align: center;
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      line-height: 1;
+      color: #ffffff;
+      text-shadow:
+        0 2px 0 #1f6438,
+        0 4px 0 #143f24,
+        -2px 0 0 #0a0f13,
+        2px 0 0 #0a0f13,
+        0 -2px 0 #0a0f13,
+        0 2px 0 #0a0f13;
+    }
+
+    .section-lead {
+      max-width: 70ch;
+      margin: 0 auto 32px;
+      text-align: center;
+      font-size: 1.04rem;
+      line-height: 1.75;
+      color: #edf8ee;
+    }
+
+    .preloader {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 30%, rgba(129, 235, 255, 0.16), transparent 30%),
+        linear-gradient(180deg, #172118 0%, #0d120e 100%);
+      transition: opacity 0.55s ease, visibility 0.55s ease;
+    }
+
+    .preloader.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .preloader-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
+      background-size: 22px 22px;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .preloader-box {
+      width: min(680px, calc(100% - 1.5rem));
+      padding: 28px 24px 24px;
+      background: linear-gradient(180deg, rgba(60, 72, 57, 0.98), rgba(26, 31, 25, 0.99));
+      border: 4px solid #121712;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.08), 0 18px 48px rgba(0,0,0,0.45);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preloader-box::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.06) 40%, transparent 65%);
+      transform: translateX(-140%);
+      animation: preloaderShine 2.2s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes preloaderShine {
+      to { transform: translateX(160%); }
+    }
+
+    .preloader-logo-wrap {
+      position: relative;
+      width: 132px;
+      height: 132px;
+      margin: 0 auto 16px;
+      animation: preloaderFloat 1.9s ease-in-out infinite;
+    }
+
+    @keyframes preloaderFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .preloader-logo-shadow {
+      position: absolute;
+      inset: 12px -10px -10px 12px;
+      background: var(--accent-red);
+      border: 4px solid #591414;
+    }
+
+    .preloader-logo {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, #efffff 0%, #b0f7ff 18%, #59dfff 44%, #2994ff 72%, #1951d3 100%);
+      border: 4px solid #0e1418;
+      box-shadow: inset 0 4px 0 rgba(255,255,255,0.35), 0 8px 0 #0a0f13;
+      color: #f8ffff;
+      text-shadow:
+        -2px -2px 0 rgba(255,255,255,0.75),
+        0 2px 0 #1d5c98,
+        0 4px 0 #14365d,
+        3px 4px 0 var(--accent-red),
+        2px 2px 0 #0a0f13;
+      font-size: 2rem;
+    }
+
+    .preloader-title {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 6vw, 3.3rem);
+      color: #efffff;
+      text-shadow:
+        0 2px 0 #ffffff,
+        0 5px 0 #1c6aa7,
+        0 8px 0 #154472,
+        5px 10px 0 var(--accent-red),
+        -2px 0 0 #0a0f13,
+        2px 0 0 #0a0f13,
+        0 -2px 0 #0a0f13,
+        0 2px 0 #0a0f13;
+    }
+
+    .preloader-sub {
+      margin: 0 0 20px;
+      color: #dfeee1;
+      font-size: 0.98rem;
+      line-height: 1.7;
+    }
+
+    .loading-bar-shell {
+      width: 100%;
+      height: 28px;
+      background: linear-gradient(180deg, #111611, #090d09);
+      border: 4px solid #1d251d;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.06);
+      padding: 3px;
+      overflow: hidden;
+    }
+
+    .loading-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(180deg, #b7ff8f 0%, var(--grass-1) 35%, var(--grass-2) 70%, var(--grass-3) 100%);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), 0 0 14px rgba(136, 219, 90, 0.3);
+      position: relative;
+      transition: width 0.16s ease;
+    }
+
+    .loading-bar-fill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 10px, rgba(0,0,0,0.08) 10px 20px);
+      mix-blend-mode: overlay;
+    }
+
+    .loading-meta {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: #d2e8d4;
+      font-size: 0.9rem;
+    }
+
+    .loading-dots {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .loading-dots span {
+      width: 8px;
+      height: 8px;
+      background: #7ce95c;
+      display: block;
+      animation: loadingDot 0.9s infinite ease-in-out;
+    }
+
+    .loading-dots span:nth-child(2) { animation-delay: 0.12s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.24s; }
+
+    @keyframes loadingDot {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.5; }
+      50% { transform: translateY(-5px) scale(1.15); opacity: 1; }
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(26, 33, 25, 0.88), rgba(17, 21, 18, 0.92));
+      border-bottom: 4px solid #101510;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+    }
+
+    .nav-inner {
+      min-height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: relative;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-mark-wrap {
+      position: relative;
+      width: 62px;
+      height: 62px;
+      flex: 0 0 auto;
+      animation: brandBob 2.8s ease-in-out infinite;
+    }
+
+    @keyframes brandBob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .brand-mark-shadow {
+      position: absolute;
+      inset: 8px -6px -6px 10px;
+      background: var(--accent-red);
+      border: 4px solid #591414;
+      box-shadow: 0 6px 0 rgba(0,0,0,0.25);
+    }
+
+    .brand-mark {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, #efffff 0%, #b0f7ff 18%, #59dfff 44%, #2994ff 72%, #1951d3 100%);
+      border: 4px solid #0e1418;
+      box-shadow: inset 0 4px 0 rgba(255,255,255,0.35), 0 6px 0 #0a0f13;
+      color: #f8ffff;
+      font-size: 1.25rem;
+      text-shadow:
+        -2px -2px 0 rgba(255,255,255,0.75),
+        0 2px 0 #1d5c98,
+        0 4px 0 #14365d,
+        2px 2px 0 #0a0f13;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 1.8rem;
+      line-height: 1;
+      color: #eefdff;
+      text-shadow:
+        0 2px 0 #144f7d,
+        0 4px 0 #173858,
+        3px 5px 0 var(--accent-red),
+        -2px 0 0 #091015,
+        2px 0 0 #091015,
+        0 -2px 0 #091015,
+        0 2px 0 #091015;
+      animation: logoGlow 3.2s ease-in-out infinite;
+    }
+
+    @keyframes logoGlow {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.1); }
+    }
+
+    .brand-subtitle {
+      margin-top: 4px;
+      color: #d4e7d6;
+      font-size: 0.84rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-links a {
+      padding: 11px 14px 10px;
+      background: linear-gradient(180deg, #627058, #465240);
+      border: 4px solid #172016;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.14), 0 4px 0 #0c110b;
+      color: #f2fbf4;
+      font-size: 0.95rem;
+      line-height: 1;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+      white-space: nowrap;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-links a::after,
+    .mini-btn::after,
+    .action-chip::after,
+    .portal-launch-btn::after,
+    .copy-chip::after,
+    .btn::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -140%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.28) 50%, transparent 100%);
+      transform: skewX(-18deg);
+      transition: left 0.45s ease;
+      pointer-events: none;
+    }
+
+    .nav-links a:hover::after,
+    .mini-btn:hover::after,
+    .action-chip:hover::after,
+    .portal-launch-btn:hover::after,
+    .copy-chip:hover::after,
+    .btn:hover::after {
+      left: 160%;
+    }
+
+    .nav-links a:hover {
+      transform: translateY(2px);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.08), 0 2px 0 #0c110b;
+      filter: brightness(1.06);
+    }
+
+    .menu-toggle {
+      display: none;
+      width: 56px;
+      height: 56px;
+      border: 4px solid #172016;
+      background: linear-gradient(180deg, #65755c, #465240);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.12), 0 4px 0 #0c110b;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .menu-toggle span,
+    .menu-toggle span::before,
+    .menu-toggle span::after {
+      content: "";
+      display: block;
+      width: 24px;
+      height: 4px;
+      background: white;
+      position: relative;
+      transition: 0.2s ease;
+    }
+
+    .menu-toggle span::before {
+      position: absolute;
+      top: -8px;
+      left: 0;
+    }
+
+    .menu-toggle span::after {
+      position: absolute;
+      top: 8px;
+      left: 0;
+    }
+
+    .hero {
+      position: relative;
+      padding: 76px 0 80px;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: 52px;
+      right: 10%;
+      width: 92px;
+      height: 92px;
+      background: linear-gradient(180deg, #fff6b0 0%, #ffd96f 100%);
+      box-shadow: 0 0 0 6px rgba(255,255,255,0.15);
+      z-index: 0;
+      animation: sunFloat 5s ease-in-out infinite;
+    }
+
+    @keyframes sunFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(3deg); }
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 210px;
+      background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.12) 36%, rgba(0,0,0,0.3) 100%);
+      pointer-events: none;
+    }
+
+    .sky-clouds {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .cloud {
+      position: absolute;
+      background: rgba(255,255,255,0.92);
+      filter: drop-shadow(0 8px 0 rgba(0,0,0,0.12));
+      opacity: 0.95;
+    }
+
+    .cloud::before,
+    .cloud::after {
+      content: "";
+      position: absolute;
+      background: inherit;
+    }
+
+    .cloud.one {
+      top: 70px;
+      left: 8%;
+      width: 120px;
+      height: 36px;
+      animation: drift 24s linear infinite;
+    }
+
+    .cloud.one::before {
+      width: 36px;
+      height: 36px;
+      left: 16px;
+      top: -18px;
+    }
+
+    .cloud.one::after {
+      width: 42px;
+      height: 36px;
+      right: 12px;
+      top: -12px;
+    }
+
+    .cloud.two {
+      top: 130px;
+      right: 10%;
+      width: 160px;
+      height: 42px;
+      animation: drift 32s linear infinite reverse;
+    }
+
+    .cloud.two::before {
+      width: 40px;
+      height: 42px;
+      left: 20px;
+      top: -18px;
+    }
+
+    .cloud.two::after {
+      width: 48px;
+      height: 42px;
+      right: 18px;
+      top: -10px;
+    }
+
+    .cloud.three {
+      top: 260px;
+      left: 22%;
+      width: 90px;
+      height: 28px;
+      animation: drift 28s linear infinite;
+    }
+
+    .cloud.three::before {
+      width: 26px;
+      height: 26px;
+      left: 10px;
+      top: -12px;
+    }
+
+    .cloud.three::after {
+      width: 32px;
+      height: 28px;
+      right: 8px;
+      top: -10px;
+    }
+
+    @keyframes drift {
+      0% { transform: translateX(0); }
+      50% { transform: translateX(30px); }
+      100% { transform: translateX(0); }
+    }
+
+    .floating-blocks {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .floating-block {
+      position: absolute;
+      opacity: 0.3;
+      border: 3px solid rgba(11, 24, 31, 0.6);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.16), 0 6px 16px rgba(0,0,0,0.18);
+      animation: blockFloat linear infinite;
+      will-change: transform;
+    }
+
+    .floating-block.grass {
+      background: linear-gradient(180deg, #b7ff8f 0 28%, #56a53e 28% 50%, #63442d 50% 100%);
+    }
+
+    .floating-block.diamond {
+      background: linear-gradient(180deg, #f0ffff 0%, #86edff 35%, #31bcff 72%, #175cdc 100%);
+    }
+
+    .floating-block.stone {
+      background: linear-gradient(180deg, #8a9388 0%, #69756b 45%, #424b41 100%);
+    }
+
+    @keyframes blockFloat {
+      0% { transform: translateY(30px) rotate(0deg); }
+      50% { transform: translateY(-24px) rotate(8deg); }
+      100% { transform: translateY(30px) rotate(0deg); }
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 28px;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-copy,
+    .hero-side {
+      position: relative;
+      z-index: 2;
+      transition: transform 0.12s linear;
+      will-change: transform;
+    }
+
+    .hero-copy {
+      max-width: 720px;
+    }
+
+    .hero-side {
+      width: 100%;
+      max-width: 470px;
+      justify-self: end;
+    }
+
+    .hero-title-stack {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      max-width: 100%;
+      margin: 0 0 18px;
+      padding: 6px 18px 20px 4px;
+      position: relative;
+    }
+
+    .hero-title {
+      margin: 0;
+      line-height: 0.93;
+      text-transform: uppercase;
+      font-size: clamp(3.4rem, 10vw, 7.4rem);
+      color: #ebffff;
+      position: relative;
+      display: inline-block;
+      padding: 0 12px 18px 0;
+      text-shadow:
+        0 2px 0 #ffffff,
+        0 6px 0 #1c6aa7,
+        0 10px 0 #154472,
+        0 14px 0 #102a48,
+        8px 16px 0 var(--accent-red),
+        10px 18px 0 var(--accent-red-dark),
+        -3px 0 0 #0a0f13,
+        3px 0 0 #0a0f13,
+        0 -3px 0 #0a0f13,
+        0 3px 0 #0a0f13,
+        -3px -3px 0 #0a0f13,
+        3px -3px 0 #0a0f13,
+        -3px 3px 0 #0a0f13,
+        3px 3px 0 #0a0f13;
+      animation: titleGlow 3.1s ease-in-out infinite;
+      z-index: 1;
+    }
+
+    .hero-title::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.28) 45%, transparent 62%);
+      transform: translateX(-130%) skewX(-12deg);
+      animation: titleShine 3.7s linear infinite;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .hero-title span {
+      display: block;
+    }
+
+    .hero-title span:last-child {
+      margin-top: -0.04em;
+    }
+
+    @keyframes titleGlow {
+      0%, 100% { transform: translateY(0); filter: brightness(1); }
+      50% { transform: translateY(-5px); filter: brightness(1.08); }
+    }
+
+    @keyframes titleShine {
+      0% { transform: translateX(-130%) skewX(-12deg); }
+      100% { transform: translateX(135%) skewX(-12deg); }
+    }
+
+    .hero-kicker {
+      display: inline-block;
+      margin: 0;
+      padding: 10px 14px 8px;
+      background: linear-gradient(180deg, #ffe8a6, #daac32);
+      border: 4px solid #493514;
+      color: #3b2903;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.25), 0 4px 0 #7b5c1d;
+      font-size: 0.92rem;
+      animation: kickerPulse 2.2s ease-in-out infinite;
+      width: fit-content;
+      text-align: center;
+      align-self: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes kickerPulse {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
+    .hero-subtitle {
+      max-width: 60ch;
+      font-size: 1.06rem;
+      line-height: 1.8;
+      color: #f4fff6;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+      margin: 0;
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px 8px;
+      background: linear-gradient(180deg, rgba(60, 71, 57, 0.96), rgba(31, 38, 29, 0.98));
+      border: 4px solid #162016;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.1), 0 4px 0 #0d120d;
+      color: #eff9f0;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .hero-badge::before {
+      content: "";
+      width: 14px;
+      height: 14px;
+      flex: 0 0 auto;
+      border: 3px solid #132013;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.16);
+      background: linear-gradient(180deg, #b7ff8f 0 28%, #56a53e 28% 50%, #63442d 50% 100%);
+    }
+
+    .hero-badge:nth-child(2)::before {
+      background: linear-gradient(180deg, #f0ffff 0%, #86edff 35%, #31bcff 72%, #175cdc 100%);
+      border-color: #163f84;
+    }
+
+    .hero-badge:nth-child(3)::before {
+      background: linear-gradient(180deg, #ffe890, #d7a82d 55%, #8a6113);
+      border-color: #4a3211;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 58px;
+      padding: 14px 18px 12px;
+      border: 4px solid #182018;
+      cursor: pointer;
+      line-height: 1;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+      user-select: none;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .btn:hover {
+      transform: translateY(2px) scale(1.02);
+      filter: brightness(1.05);
+    }
+
+    .btn:active {
+      transform: translateY(4px) scale(0.99);
+    }
+
+    .btn-primary {
+      color: #effff0;
+      background: linear-gradient(180deg, #8dea66, #56ab3f 55%, #2d6d25);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.18), 0 5px 0 #1a4116;
+      animation: buttonPulseGreen 2.4s ease-in-out infinite;
+    }
+
+    .btn-secondary {
+      color: #f8ffff;
+      background: linear-gradient(180deg, #aef5ff, #48c8ff 42%, #2a8bf2 78%, #1a53d8 100%);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.25), 0 5px 0 #153a8a;
+      animation: buttonPulseBlue 2.7s ease-in-out infinite;
+    }
+
+    .btn-dark {
+      color: #f4fff7;
+      background: linear-gradient(180deg, #697462, #4a5346);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.12), 0 5px 0 #232922;
+    }
+
+    .btn-gold {
+      color: #3c2901;
+      background: linear-gradient(180deg, #fff0b7, #efc14c 45%, #bf7d21 100%);
+      border-color: #4a3211;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.2), 0 5px 0 #6f4b14;
+    }
+
+    @keyframes buttonPulseGreen {
+      0%, 100% { box-shadow: inset 0 3px 0 rgba(255,255,255,0.18), 0 5px 0 #1a4116; }
+      50% { box-shadow: inset 0 3px 0 rgba(255,255,255,0.18), 0 5px 0 #1a4116, 0 0 18px rgba(109, 226, 89, 0.28); }
+    }
+
+    @keyframes buttonPulseBlue {
+      0%, 100% { box-shadow: inset 0 3px 0 rgba(255,255,255,0.25), 0 5px 0 #153a8a; }
+      50% { box-shadow: inset 0 3px 0 rgba(255,255,255,0.25), 0 5px 0 #153a8a, 0 0 18px rgba(72, 200, 255, 0.28); }
+    }
+
+    .action-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .action-chip {
+      position: relative;
+      overflow: hidden;
+      min-height: 48px;
+      padding: 11px 14px 10px;
+      border: 4px solid #172016;
+      background: linear-gradient(180deg, #627058, #465240);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.12), 0 4px 0 #0c110b;
+      color: #f2fbf4;
+      cursor: pointer;
+      transition: transform 0.12s ease, filter 0.12s ease;
+    }
+
+    .action-chip:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+
+    .server-card-wrap {
+      animation: serverCardFloat 4.6s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    .server-card {
+      padding: 22px;
+      background: linear-gradient(180deg, rgba(56, 66, 52, 0.98), rgba(33, 40, 31, 0.99));
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    .server-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 14px;
+      background:
+        linear-gradient(90deg,
+          #8dea66 0 18%,
+          #56ab3f 18% 36%,
+          #aef5ff 36% 54%,
+          #48c8ff 54% 72%,
+          #fff0bf 72% 86%,
+          #efc14c 86% 100%);
+      border-bottom: 4px solid #122013;
+      pointer-events: none;
+    }
+
+    .server-card::after {
+      content: "";
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      width: 22px;
+      height: 22px;
+      background: linear-gradient(180deg, #d8ffff, #6fe2ff 44%, #2b9ff7 100%);
+      border: 4px solid #163f84;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), 0 4px 0 rgba(0,0,0,0.24);
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    @keyframes serverCardFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .server-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px 8px;
+      background: linear-gradient(180deg, #33482f, #253423);
+      border: 3px solid #111811;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.08), 0 4px 0 #0c100c;
+      font-size: 0.86rem;
+      color: #e9ffea;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      background: #79ec58;
+      box-shadow: 0 0 0 3px rgba(121, 236, 88, 0.18);
+      animation: pulse 1.6s infinite;
+    }
+
+    .status-dot.offline {
+      background: #ff7070;
+      box-shadow: 0 0 0 3px rgba(255, 112, 112, 0.18);
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .terminal {
+      background: linear-gradient(180deg, #101510, #0b0f0b);
+      border: 4px solid #202920;
+      padding: 18px;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.05);
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .terminal::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent 40%, rgba(255,255,255,0.015));
+      pointer-events: none;
+    }
+
+    .terminal-line {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-family: monospace;
+      color: #c1ffc7;
+      line-height: 1.6;
+      font-size: 0.98rem;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    .terminal-line:last-child {
+      margin-bottom: 0;
+    }
+
+    .terminal-line .prompt {
+      color: #7de35f;
+      flex: 0 0 auto;
+    }
+
+    .typing-text::after {
+      content: "█";
+      display: inline-block;
+      margin-left: 4px;
+      animation: cursorBlink 0.85s steps(1, end) infinite;
+      color: #99ff87;
+    }
+
+    @keyframes cursorBlink {
+      50% { opacity: 0; }
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .mini-stat {
+      padding: 14px;
+      background: linear-gradient(180deg, #5d6c56, #3d473a);
+      border: 4px solid #192019;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.1), 0 4px 0 #0f130f;
+      transition: transform 0.16s ease, filter 0.16s ease;
+    }
+
+    .mini-stat:hover {
+      transform: translateY(-4px);
+      filter: brightness(1.05);
+    }
+
+    .mini-stat-label {
+      display: block;
+      font-size: 0.78rem;
+      color: #dbe5dd;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 8px;
+    }
+
+    .mini-stat-value {
+      display: block;
+      font-size: 1.08rem;
+      color: white;
+      word-break: break-word;
+    }
+
+    .connect-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .connect-card {
+      padding: 22px;
+      min-height: 245px;
+      background: linear-gradient(180deg, rgba(69, 80, 66, 0.97), rgba(37, 44, 35, 0.99));
+      border: 4px solid #161d16;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.08), var(--panel-shadow);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .connect-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.08) 45%, transparent 70%);
+      transform: translateX(-140%);
+      transition: transform 0.55s ease;
+      pointer-events: none;
+    }
+
+    .connect-card:hover::before {
+      transform: translateX(140%);
+    }
+
+    .connect-card::after {
+      content: "";
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 0;
+      height: 10px;
+      background:
+        linear-gradient(90deg,
+          #8dea66 0 18%,
+          #56ab3f 18% 36%,
+          #8a9388 36% 54%,
+          #69756b 54% 72%,
+          #aef5ff 72% 86%,
+          #48c8ff 86% 100%);
+      border-bottom: 4px solid rgba(0,0,0,0.22);
+      opacity: 0.96;
+      pointer-events: none;
+    }
+
+    .connect-card:hover {
+      transform: translateY(-7px) scale(1.01);
+      filter: brightness(1.04);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.08), 0 8px 0 #0a0d0b, 0 22px 34px rgba(0, 0, 0, 0.34);
+    }
+
+    .connect-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .connect-badge {
+      min-width: 56px;
+      min-height: 56px;
+      padding: 10px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, #d8ffff, #6fe2ff 44%, #2b9ff7 100%);
+      border: 4px solid #163f84;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.22), 0 4px 0 #163f84;
+      font-size: 1.35rem;
+      animation: badgeSpinBob 3.6s ease-in-out infinite;
+      flex: 0 0 auto;
+    }
+
+    .connect-card.java .connect-badge {
+      background: linear-gradient(180deg, #fff0bf, #efc14c 42%, #bf7d21 100%);
+      border-color: #6f4b14;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), 0 4px 0 #6f4b14;
+    }
+
+    .connect-card.bedrock .connect-badge {
+      background: linear-gradient(180deg, #c2ffb4, #72dd55 48%, #397c2a 100%);
+      border-color: #173c13;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), 0 4px 0 #173c13;
+    }
+
+    @keyframes badgeSpinBob {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-4px) rotate(4deg); }
+    }
+
+    .connect-headings {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .connect-title {
+      margin: 0 0 8px;
+      font-size: 1.12rem;
+      color: white;
+    }
+
+    .tag {
+      padding: 7px 10px 6px;
+      background: linear-gradient(180deg, #33482f, #253423);
+      border: 3px solid #111811;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.08), 0 4px 0 #0c100c;
+      color: #ebffed;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .connect-address {
+      min-height: 70px;
+      padding: 14px;
+      margin: 14px 0;
+      background: linear-gradient(180deg, #101611, #0a0f0b);
+      border: 4px solid #1e271f;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.06);
+      color: #91ff91;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      word-break: break-word;
+    }
+
+    .connect-desc {
+      margin: 0 0 14px;
+      color: #dce8de;
+      line-height: 1.7;
+      font-size: 0.96rem;
+    }
+
+    .mini-btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .mini-btn,
+    .copy-chip,
+    .portal-launch-btn {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 12px 14px 10px;
+      border: 4px solid #182018;
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.12s ease, filter 0.12s ease;
+    }
+
+    .mini-btn:hover,
+    .copy-chip:hover,
+    .portal-launch-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+
+    .mini-btn.green,
+    .copy-chip.green,
+    .portal-launch-btn.green {
+      background: linear-gradient(180deg, #8dea66, #56ab3f 55%, #2d6d25);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.18), 0 5px 0 #1a4116;
+      color: #effff0;
+    }
+
+    .mini-btn.blue,
+    .copy-chip.blue,
+    .portal-launch-btn.blue {
+      background: linear-gradient(180deg, #aef5ff, #48c8ff 42%, #2a8bf2 78%, #1a53d8 100%);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.25), 0 5px 0 #153a8a;
+      color: #f8ffff;
+    }
+
+    .mini-btn.gold,
+    .copy-chip.gold,
+    .portal-launch-btn.gold {
+      background: linear-gradient(180deg, #fff0bf, #efc14c 42%, #bf7d21 100%);
+      border-color: #4a3211;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), 0 5px 0 #6f4b14;
+      color: #3c2901;
+    }
+
+    .mini-btn.dark,
+    .copy-chip.dark,
+    .portal-launch-btn.dark {
+      background: linear-gradient(180deg, #697462, #4a5346);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.12), 0 5px 0 #232922;
+      color: #f4fff7;
+    }
+
+    .copy-bar {
+      margin-top: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .portal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .portal-panel {
+      padding: 24px;
+      background: linear-gradient(180deg, rgba(74, 89, 71, 0.96), rgba(36, 44, 35, 0.98));
+      border: 4px solid #151d15;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.08), var(--panel-shadow-big);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.18s ease, filter 0.18s ease;
+    }
+
+    .portal-panel:hover {
+      transform: translateY(-6px) rotate(-0.35deg);
+      filter: brightness(1.04);
+    }
+
+    .portal-panel::before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 0;
+      height: 10px;
+      background:
+        linear-gradient(90deg,
+          #fff0bf 0 18%,
+          #efc14c 18% 36%,
+          #8dea66 36% 54%,
+          #56ab3f 54% 72%,
+          #aef5ff 72% 86%,
+          #48c8ff 86% 100%);
+      border-bottom: 4px solid rgba(0,0,0,0.22);
+      opacity: 0.96;
+      pointer-events: none;
+    }
+
+    .portal-panel::after {
+      content: "";
+      position: absolute;
+      right: -18px;
+      bottom: -18px;
+      width: 90px;
+      height: 90px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0));
+      transform: rotate(45deg);
+      pointer-events: none;
+    }
+
+    .portal-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .portal-icon {
+      width: 60px;
+      height: 60px;
+      display: grid;
+      place-items: center;
+      font-size: 1.5rem;
+      background: linear-gradient(180deg, #d8ffff, #6fe2ff 44%, #2b9ff7 100%);
+      border: 4px solid #163f84;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.22), 0 4px 0 #163f84;
+    }
+
+    .portal-panel.mobile .portal-icon {
+      background: linear-gradient(180deg, #c2ffb4, #72dd55 48%, #397c2a 100%);
+      border-color: #173c13;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), 0 4px 0 #173c13;
+    }
+
+    .portal-title {
+      margin: 0;
+      color: #fff;
+      font-size: 1.18rem;
+    }
+
+    .portal-path {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 12px 14px 10px;
+      background: linear-gradient(180deg, #101611, #0a0f0b);
+      border: 4px solid #1e271f;
+      color: #91ff91;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.06);
+    }
+
+    .portal-desc {
+      margin: 14px 0 16px;
+      color: #dce8de;
+      line-height: 1.75;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .feature-card {
+      padding: 22px 18px 18px;
+      min-height: 220px;
+      background: linear-gradient(180deg, rgba(69, 80, 66, 0.97), rgba(37, 44, 35, 0.99));
+      border: 4px solid #161d16;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.08), var(--panel-shadow);
+      transform: translateY(0);
+      transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 0;
+      height: 10px;
+      background:
+        linear-gradient(90deg,
+          #8dea66 0 20%,
+          #56ab3f 20% 40%,
+          #aef5ff 40% 60%,
+          #48c8ff 60% 80%,
+          #fff0bf 80% 100%);
+      border-bottom: 4px solid rgba(0,0,0,0.22);
+      opacity: 0.96;
+      pointer-events: none;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-7px) scale(1.01);
+      filter: brightness(1.04);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.08), 0 8px 0 #0a0d0b, 0 22px 34px rgba(0, 0, 0, 0.34);
+    }
+
+    .feature-icon {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 16px;
+      background: linear-gradient(180deg, #d1ffd2, #79e166 48%, #3f8f31 100%);
+      border: 4px solid #142014;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.2), 0 4px 0 #193a14;
+      font-size: 1.35rem;
+      animation: iconBob 2.8s ease-in-out infinite;
+    }
+
+    .feature-card:nth-child(2) .feature-icon {
+      background: linear-gradient(180deg, #d8ffff, #6fe2ff 44%, #2b9ff7 100%);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.22), 0 4px 0 #163f84;
+    }
+
+    .feature-card:nth-child(3) .feature-icon {
+      background: linear-gradient(180deg, #fff0bf, #efc14c 42%, #bf7d21 100%);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), 0 4px 0 #6f4b14;
+    }
+
+    @keyframes iconBob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .feature-title {
+      margin: 0 0 10px;
+      font-size: 1.15rem;
+      color: white;
+    }
+
+    .feature-text {
+      margin: 0;
+      color: #dce6dd;
+      line-height: 1.7;
+      font-size: 0.97rem;
+    }
+
+    .faq-grid {
+      display: grid;
+      gap: 14px;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    .faq-item {
+      background: linear-gradient(180deg, rgba(85, 100, 80, 0.95), rgba(48, 57, 46, 0.98));
+      border: 4px solid #152015;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.08), 0 4px 0 #0e130e;
+      overflow: hidden;
+      transition: transform 0.16s ease, filter 0.16s ease;
+    }
+
+    .faq-item:hover {
+      transform: translateY(-3px);
+      filter: brightness(1.03);
+    }
+
+    .faq-question {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      color: white;
+      padding: 18px 18px 16px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .faq-question span:last-child {
+      font-size: 1.4rem;
+      line-height: 1;
+      color: #c7ffd1;
+      flex: 0 0 auto;
+      transition: transform 0.22s ease;
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease;
+      padding: 0 18px;
+    }
+
+    .faq-answer p {
+      margin: 0;
+      padding: 0 0 18px;
+      color: #e0ebe1;
+      line-height: 1.75;
+    }
+
+    .faq-item.open .faq-answer {
+      max-height: 240px;
+    }
+
+    .faq-item.open .faq-question span:last-child {
+      transform: rotate(180deg);
+    }
+
+    footer {
+      position: relative;
+      padding: 34px 0 42px;
+      background: linear-gradient(180deg, rgba(12, 16, 13, 0.98), rgba(7, 9, 8, 1));
+      border-top: 4px solid #101510;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .footer-mark {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, #f7ffff 0%, #baf5ff 22%, #56dbff 52%, #217cf0 100%);
+      border: 4px solid #0d1418;
+      color: #fff;
+      text-shadow: 0 2px 0 #164d7c, 2px 2px 0 var(--accent-red), -1px 0 0 #081015;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.28), 0 4px 0 #0a0f13;
+      animation: footerMarkBob 2.7s ease-in-out infinite;
+    }
+
+    @keyframes footerMarkBob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .footer-copy {
+      color: #cfdad1;
+      line-height: 1.7;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      padding: 10px 12px 8px;
+      background: linear-gradient(180deg, #627058, #465240);
+      border: 4px solid #172016;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.12), 0 4px 0 #0c110b;
+      font-size: 0.9rem;
+      transition: transform 0.14s ease, filter 0.14s ease;
+    }
+
+    .footer-links a:hover {
+      transform: translateY(-3px);
+      filter: brightness(1.06);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(24px);
+      min-width: 240px;
+      max-width: calc(100% - 1.5rem);
+      padding: 14px 16px 12px;
+      background: linear-gradient(180deg, #d8ffff, #6fe2ff 40%, #2b9ff7 100%);
+      color: #07233a;
+      border: 4px solid #0f304e;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.25), 0 6px 0 #143f72;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 1200;
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px) scale(0.98);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      place-items: center;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+    }
+
+    .modal-backdrop.open {
+      display: grid;
+    }
+
+    .modal-panel {
+      width: min(1080px, 100%);
+      max-height: min(90vh, 980px);
+      overflow: auto;
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(60, 72, 57, 0.98), rgba(26, 31, 25, 0.99));
+      border: 4px solid #121712;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.08), 0 18px 48px rgba(0,0,0,0.45);
+      animation: modalPop 0.18s ease-out both;
+    }
+
+    @keyframes modalPop {
+      from { transform: translateY(12px) scale(0.98); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      margin: 0;
+      color: #fff;
+      font-size: clamp(1.5rem, 4vw, 2.1rem);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .close-modal-btn {
+      width: 54px;
+      height: 54px;
+      padding: 0;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .guide-card {
+      padding: 18px;
+      min-height: 100%;
+      background: linear-gradient(180deg, rgba(74, 89, 71, 0.96), rgba(36, 44, 35, 0.98));
+      border: 4px solid #151d15;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.08), var(--panel-shadow);
+    }
+
+    .guide-card h4 {
+      margin: 0 0 10px;
+      font-size: 1.1rem;
+      color: #fff;
+    }
+
+    .guide-list {
+      margin: 0;
+      padding-left: 22px;
+      color: #dbe8dd;
+      line-height: 1.8;
+    }
+
+    .guide-copy-box {
+      margin-top: 16px;
+      padding: 14px;
+      background: linear-gradient(180deg, #101611, #0a0f0b);
+      border: 4px solid #1e271f;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.06);
+      color: #91ff91;
+    }
+
+    .guide-copy-row,
+    .modal-action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .modal-info-box {
+      padding: 16px;
+      margin-bottom: 16px;
+      background: linear-gradient(180deg, rgba(96, 114, 92, 0.94), rgba(60, 70, 57, 0.97));
+      border: 4px solid #162016;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.08), 0 4px 0 #0f130f;
+      color: #e6f7e8;
+      line-height: 1.75;
+    }
+
+    @media (max-width: 1100px) {
+      .hero-grid,
+      .connect-grid,
+      .feature-grid,
+      .guide-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .portal-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (min-width: 861px) {
+      .hero-title-stack {
+        align-items: center;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .menu-toggle {
+        display: inline-flex;
+      }
+
+      .nav-links {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 12px;
+        background: linear-gradient(180deg, rgba(20, 26, 19, 0.98), rgba(13, 17, 13, 0.99));
+        border: 4px solid #111511;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+      }
+
+      .nav-links.open {
+        display: flex;
+      }
+
+      .nav-links a {
+        width: 100%;
+        text-align: center;
+      }
+
+      .hero {
+        padding-top: 54px;
+      }
+
+      .hero-copy,
+      .hero-side {
+        transform: none !important;
+      }
+
+      .hero-side {
+        max-width: 100%;
+        justify-self: stretch;
+      }
+
+      .hero-title-stack {
+        align-items: flex-start;
+        width: auto;
+        margin-bottom: 16px;
+        padding: 4px 8px 18px 0;
+        gap: 12px;
+      }
+
+      .hero-title {
+        font-size: clamp(2.9rem, 16vw, 5.2rem);
+        line-height: 0.94;
+        padding: 0 10px 14px 0;
+      }
+
+      .hero-kicker {
+        align-self: flex-start;
+      }
+
+      .mini-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .container {
+        width: min(var(--max-width), calc(100% - 1rem));
+      }
+
+      .preloader-box {
+        padding: 22px 16px 18px;
+      }
+
+      .preloader-logo-wrap {
+        width: 108px;
+        height: 108px;
+      }
+
+      .nav-inner {
+        min-height: 74px;
+      }
+
+      .brand-mark-wrap {
+        width: 54px;
+        height: 54px;
+      }
+
+      .brand-title {
+        font-size: 1.45rem;
+      }
+
+      .brand-subtitle {
+        font-size: 0.72rem;
+      }
+
+      .hero-actions,
+      .hero-badges,
+      .action-chip-row,
+      .mini-btn-row,
+      .copy-bar,
+      .guide-copy-row,
+      .modal-action-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn,
+      .mini-btn,
+      .copy-chip,
+      .portal-launch-btn {
+        width: 100%;
+      }
+
+      .server-card-header,
+      .connect-top,
+      .portal-top,
+      .modal-head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .faq-question {
+        align-items: flex-start;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      .hero-copy,
+      .hero-side,
+      .server-card {
+        transform: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="preloading">
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader-grid"></div>
+
+    <div class="preloader-box">
+      <div class="preloader-logo-wrap">
+        <div class="preloader-logo-shadow"></div>
+        <div class="preloader-logo mc-font">SM</div>
+      </div>
+
+      <h1 class="preloader-title mc-font">SelahMC</h1>
+      <p class="preloader-sub">Loading chunks, syncing portals, and preparing the realm...</p>
+
+      <div class="loading-bar-shell" aria-label="Loading progress">
+        <div class="loading-bar-fill" id="loadingBarFill"></div>
+      </div>
+
+      <div class="loading-meta">
+        <span class="mc-font" id="loadingPercent">0%</span>
+        <span id="loadingText">Preparing block world...</span>
+        <span class="loading-dots" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <header class="navbar">
+    <div class="container nav-inner">
+      <a href="#top" class="brand" aria-label="SelahMC home">
+        <div class="brand-mark-wrap" aria-hidden="true">
+          <div class="brand-mark-shadow"></div>
+          <div class="brand-mark mc-font">SM</div>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title mc-font">SelahMC</h1>
+          <div class="brand-subtitle">Minecraft + Eaglercraft Server</div>
+        </div>
+      </a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span>
+      </button>
+
+      <nav class="nav-links mc-font" id="navLinks">
+        <a href="#connect">Connect</a>
+        <a href="#portal">Portal</a>
+        <a href="#about">About</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero" id="hero">
+      <div class="sky-clouds" aria-hidden="true">
+        <div class="cloud one"></div>
+        <div class="cloud two"></div>
+        <div class="cloud three"></div>
+      </div>
+
+      <div class="floating-blocks" id="floatingBlocks" aria-hidden="true"></div>
+
+      <div class="container hero-grid">
+        <div class="hero-copy reveal" id="heroCopy">
+          <div class="hero-title-stack">
+            <h2 class="hero-title mc-font">
+              <span>Selah</span>
+              <span>MC</span>
+            </h2>
+
+            <div class="hero-kicker mc-font">Browser-ready block battles</div>
+          </div>
+
+          <p class="hero-subtitle" id="heroTagline">
+            Join SelahMC on Eaglercraft, Java, or Bedrock with quick connection info, portal access, and easy copy actions.
+          </p>
+
+          <div class="hero-badges">
+            <div class="hero-badge mc-font">Cross-Play Ready</div>
+            <div class="hero-badge mc-font">Browser Friendly</div>
+            <div class="hero-badge mc-font">Portal Fast Join</div>
+          </div>
+
+          <div class="hero-actions">
+            <button class="btn btn-primary mc-font" id="quickConnectBtn" type="button">Quick Connect</button>
+            <button class="btn btn-secondary mc-font" id="openGuideBtn" type="button">Connection Guide</button>
+            <button class="btn btn-gold mc-font" id="openPortalBtn" type="button">Portal Launch</button>
+          </div>
+
+          <div class="action-chip-row">
+            <button class="action-chip mc-font" id="copyInviteBtn" type="button">Copy Invite Text</button>
+            <button class="action-chip mc-font" id="copyAllBtn" type="button">Copy All Addresses</button>
+            <a class="action-chip mc-font" id="discordBtn" href="#faq">Community</a>
+          </div>
+        </div>
+
+        <aside class="hero-side reveal" id="heroSide">
+          <div class="server-card-wrap" id="serverCardWrap">
+            <div class="pixel-panel server-card" id="serverCard">
+              <div class="server-card-header">
+              <div>
+                <strong class="mc-font" style="font-size:1.15rem;">Server Console</strong>
+                <div style="margin-top:8px;color:#dce8de;">Server status and connection info.</div>
+              </div>
+
+              <div class="status-pill mc-font" id="statusPill">
+                <span class="status-dot" id="statusDot" aria-hidden="true"></span>
+                <span id="statusText">Ready</span>
+              </div>
+            </div>
+
+            <div class="terminal" aria-label="Server info">
+              <div class="terminal-line">
+                <span class="prompt">&gt;</span>
+                <span>Server: <strong id="serverNameText">SelahMC</strong></span>
+              </div>
+              <div class="terminal-line">
+                <span class="prompt">&gt;</span>
+                <span>Version: <strong id="serverVersionText">1.8.8</strong></span>
+              </div>
+              <div class="terminal-line">
+                <span class="prompt">&gt;</span>
+                <span>Eagler: <strong id="serverWssText">wss://play.selahmc.net/</strong></span>
+              </div>
+              <div class="terminal-line">
+                <span class="prompt">&gt;</span>
+                <span class="typing-text" id="motdText"></span>
+              </div>
+            </div>
+
+            <div class="mini-grid">
+              <div class="mini-stat">
+                <span class="mini-stat-label mc-font">Java</span>
+                <span class="mini-stat-value" id="serverJavaText">play.selahmc.net</span>
+              </div>
+              <div class="mini-stat">
+                <span class="mini-stat-label mc-font">Bedrock</span>
+                <span class="mini-stat-value" id="serverBedrockText">bedrock.selahmc.net:19132</span>
+              </div>
+              <div class="mini-stat">
+                <span class="mini-stat-label mc-font">Desktop Portal</span>
+                <span class="mini-stat-value" id="desktopPathText">/game.html</span>
+              </div>
+              <div class="mini-stat">
+                <span class="mini-stat-label mc-font">Mobile Portal</span>
+                <span class="mini-stat-value" id="mobilePathText">/mobile.html</span>
+              </div>
+            </div>
+          </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <div class="terrain-divider" aria-hidden="true"></div>
+
+    <section class="section section-dark" id="connect">
+      <div class="container">
+        <h2 class="section-heading mc-font reveal">Quick Connect</h2>
+        <p class="section-lead reveal">
+          Join on Eaglercraft, Java, or Bedrock with fast copy buttons and clear connection info.
+        </p>
+
+        <div class="connect-grid">
+          <article class="connect-card reveal eagler">
+            <div class="connect-top">
+              <div class="connect-badge" aria-hidden="true">🌐</div>
+              <div class="connect-headings">
+                <h3 class="connect-title mc-font">Eagler (WSS)</h3>
+                <div class="connect-desc">Open the portal, go to multiplayer, add the WSS, then save and join.</div>
+              </div>
+              <span class="tag mc-font">Browser</span>
+            </div>
+
+            <div class="connect-address mono" id="wssText">wss://play.selahmc.net/</div>
+
+            <div class="mini-btn-row">
+              <button class="mini-btn blue mc-font" id="copyWssBtn" type="button">Copy WSS</button>
+              <button class="mini-btn gold mc-font" id="portalFromConnectBtn" type="button">Launch Portal</button>
+            </div>
+          </article>
+
+          <article class="connect-card reveal java">
+            <div class="connect-top">
+              <div class="connect-badge" aria-hidden="true">🖥️</div>
+              <div class="connect-headings">
+                <h3 class="connect-title mc-font">Java (Launcher)</h3>
+                <div class="connect-desc">Minecraft Java Edition → Multiplayer → Add Server or Direct Connect.</div>
+              </div>
+              <span class="tag mc-font" id="javaPortTag">25565</span>
+            </div>
+
+            <div class="connect-address mono" id="javaText">play.selahmc.net</div>
+
+            <div class="mini-btn-row">
+              <button class="mini-btn green mc-font" id="copyJavaBtn" type="button">Copy Java</button>
+            </div>
+          </article>
+
+          <article class="connect-card reveal bedrock">
+            <div class="connect-top">
+              <div class="connect-badge" aria-hidden="true">📱</div>
+              <div class="connect-headings">
+                <h3 class="connect-title mc-font">Bedrock</h3>
+                <div class="connect-desc">Servers → Add Server → put in the bedrock host and port, then join.</div>
+              </div>
+              <span class="tag mc-font">UDP</span>
+            </div>
+
+            <div class="connect-address mono" id="bedrockText">bedrock.selahmc.net:19132</div>
+
+            <div class="mini-btn-row">
+              <button class="mini-btn green mc-font" id="copyBedrockBtn" type="button">Copy Bedrock</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="copy-bar reveal">
+          <button class="copy-chip dark mc-font" id="copyInviteBtn2" type="button">Copy Invite Text</button>
+          <button class="copy-chip gold mc-font" id="copyAllBtn2" type="button">Copy All Addresses</button>
+          <button class="copy-chip blue mc-font" id="openGuideBtn2" type="button">Open Guide</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="terrain-divider" aria-hidden="true"></div>
+
+    <section class="section" id="portal">
+      <div class="container">
+        <h2 class="section-heading mc-font reveal">Portal Access</h2>
+        <p class="section-lead reveal">
+          Choose your client path, launch it, then add the server and join.
+        </p>
+
+        <div class="portal-grid">
+          <article class="portal-panel reveal desktop">
+            <div class="portal-top">
+              <div>
+                <div class="portal-icon" aria-hidden="true">🖥️</div>
+              </div>
+              <span class="tag mc-font" id="desktopVersionTag">v1.8.8</span>
+            </div>
+
+            <h3 class="portal-title mc-font">Desktop Portal</h3>
+            <div class="portal-path mono" id="desktopPortalPathText">/game.html</div>
+            <p class="portal-desc">
+              Open the desktop client route, then add the WSS inside multiplayer.
+            </p>
+
+            <button class="portal-launch-btn blue mc-font" id="launchDesktopBtn" type="button">Launch Desktop</button>
+          </article>
+
+          <article class="portal-panel reveal mobile">
+            <div class="portal-top">
+              <div>
+                <div class="portal-icon" aria-hidden="true">📱</div>
+              </div>
+              <span class="tag mc-font" id="mobileVersionTag">v1.8.8</span>
+            </div>
+
+            <h3 class="portal-title mc-font">Mobile Portal</h3>
+            <div class="portal-path mono" id="mobilePortalPathText">/mobile.html</div>
+            <p class="portal-desc">
+              Open the mobile client route, then use the same WSS address in multiplayer.
+            </p>
+
+            <button class="portal-launch-btn green mc-font" id="launchMobileBtn" type="button">Launch Mobile</button>
+          </article>
+        </div>
+
+        <div class="copy-bar reveal">
+          <button class="copy-chip gold mc-font" id="openPortalBtn2" type="button">Open Portal Popup</button>
+          <button class="copy-chip dark mc-font" id="copyWssBtn2" type="button">Copy WSS Again</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="terrain-divider" aria-hidden="true"></div>
+
+    <section class="section section-dark" id="about">
+      <div class="container">
+        <h2 class="section-heading mc-font reveal">Built For Fast Joining</h2>
+        <p class="section-lead reveal">
+          Quick connect cards, portal access, and a clean Minecraft-style layout.
+        </p>
+
+        <div class="feature-grid">
+          <article class="feature-card reveal">
+            <div class="feature-icon" aria-hidden="true">🧭</div>
+            <h3 class="feature-title mc-font">Clear Join Flow</h3>
+            <p class="feature-text">
+              Eaglercraft, Java, and Bedrock connection info stays visible and easy to copy.
+            </p>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon" aria-hidden="true">📦</div>
+            <h3 class="feature-title mc-font">Portal Split</h3>
+            <p class="feature-text">
+              Separate desktop and mobile launch buttons keep browser joining simple and fast.
+            </p>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon" aria-hidden="true">⚔️</div>
+            <h3 class="feature-title mc-font">Server Brand Feel</h3>
+            <p class="feature-text">
+              Buttons, cards, and panels stay blocky, bold, and Minecraft-forward across the whole page.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <div class="terrain-divider" aria-hidden="true"></div>
+
+    <section class="section" id="faq">
+      <div class="container">
+        <h2 class="section-heading mc-font reveal">FAQ</h2>
+        <p class="section-lead reveal">
+          Common questions and quick answers for joining SelahMC.
+        </p>
+
+        <div class="faq-grid">
+          <div class="faq-item reveal">
+            <button class="faq-question mc-font" type="button">
+              <span>How do I join on Eaglercraft?</span>
+              <span>+</span>
+            </button>
+            <div class="faq-answer">
+              <p>
+                Open the desktop or mobile portal, go to multiplayer, add the WSS address, then save and join.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item reveal">
+            <button class="faq-question mc-font" type="button">
+              <span>What should I enter for Java?</span>
+              <span>+</span>
+            </button>
+            <div class="faq-answer">
+              <p>
+                Use the Java address shown in Quick Connect. If the Java port is 25565, most launchers only need the hostname.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item reveal">
+            <button class="faq-question mc-font" type="button">
+              <span>What do Bedrock players need?</span>
+              <span>+</span>
+            </button>
+            <div class="faq-answer">
+              <p>
+                Bedrock needs both the host and the port. The site shows the combined address for quick copying.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <div class="footer-mark mc-font">SM</div>
+        <div class="footer-copy">
+          <strong class="mc-font">SelahMC</strong><br />
+          <span id="footerAddress">play.selahmc.net</span> • <span id="footerYear"></span>
+        </div>
+      </div>
+
+      <div class="footer-links mc-font">
+        <a href="#connect">Connect</a>
+        <a href="#portal">Portal</a>
+        <a href="#about">About</a>
+        <a href="#faq">FAQ</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="modal-backdrop" id="guideModal" aria-hidden="true">
+    <div class="modal-panel pixel-panel" role="dialog" aria-modal="true" aria-labelledby="guideModalTitle">
+      <div class="modal-head">
+        <h3 class="modal-title mc-font" id="guideModalTitle">Connection Guide</h3>
+        <button class="btn btn-dark close-modal-btn mc-font" id="closeGuideModalBtn" type="button" aria-label="Close connection guide">X</button>
+      </div>
+
+      <div class="guide-grid">
+        <section class="guide-card">
+          <h4 class="mc-font">Eagler (Browser)</h4>
+          <ol class="guide-list">
+            <li>Launch the portal.</li>
+            <li>Go to Multiplayer.</li>
+            <li>Add a server.</li>
+            <li>Paste the WSS address.</li>
+            <li>Save and join.</li>
+          </ol>
+
+          <div class="guide-copy-box mono" id="guideWssText">wss://play.selahmc.net/</div>
+          <div class="guide-copy-row">
+            <button class="mini-btn blue mc-font" id="guideCopyWssBtn" type="button">Copy WSS</button>
+            <button class="mini-btn gold mc-font" id="guidePortalBtn" type="button">Open Portal</button>
+          </div>
+        </section>
+
+        <section class="guide-card">
+          <h4 class="mc-font">Java (Launcher)</h4>
+          <ol class="guide-list">
+            <li>Open Minecraft Java Edition.</li>
+            <li>Go to Multiplayer.</li>
+            <li>Choose Add Server or Direct Connect.</li>
+            <li>Paste the Java address.</li>
+            <li>Save and join.</li>
+          </ol>
+
+          <div class="guide-copy-box mono" id="guideJavaText">play.selahmc.net</div>
+          <div class="guide-copy-row">
+            <button class="mini-btn green mc-font" id="guideCopyJavaBtn" type="button">Copy Java</button>
+          </div>
+        </section>
+
+        <section class="guide-card">
+          <h4 class="mc-font">Bedrock</h4>
+          <ol class="guide-list">
+            <li>Go to Servers.</li>
+            <li>Choose Add Server.</li>
+            <li>Put in the Bedrock host.</li>
+            <li>Enter the Bedrock port.</li>
+            <li>Save and join.</li>
+          </ol>
+
+          <div class="guide-copy-box mono" id="guideBedrockText">bedrock.selahmc.net:19132</div>
+          <div class="guide-copy-row">
+            <button class="mini-btn green mc-font" id="guideCopyBedrockBtn" type="button">Copy Bedrock</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="modal-action-row">
+        <button class="mini-btn gold mc-font" id="guideCopyInviteBtn" type="button">Copy Full Invite</button>
+        <button class="mini-btn dark mc-font" id="guideDoneBtn" type="button">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="portalModal" aria-hidden="true">
+    <div class="modal-panel pixel-panel" role="dialog" aria-modal="true" aria-labelledby="portalModalTitle" style="max-width:920px;">
+      <div class="modal-head">
+        <h3 class="modal-title mc-font" id="portalModalTitle">Portal Launch</h3>
+        <button class="btn btn-dark close-modal-btn mc-font" id="closePortalModalBtn" type="button" aria-label="Close portal launch">X</button>
+      </div>
+
+      <div class="modal-info-box">
+        Pick a portal, then add this Eagler address in multiplayer:
+        <strong class="mono" id="portalInlineWss">wss://play.selahmc.net/</strong>
+      </div>
+
+      <div class="portal-grid">
+        <article class="portal-panel desktop">
+          <div class="portal-top">
+            <div class="portal-icon" aria-hidden="true">🖥️</div>
+            <span class="tag mc-font" id="desktopVersionTag2">v1.8.8</span>
+          </div>
+
+          <h3 class="portal-title mc-font">Desktop Portal</h3>
+          <div class="portal-path mono" id="desktopPortalPathText2">/game.html</div>
+          <p class="portal-desc">Best for laptops and desktops using the browser client route.</p>
+          <button class="portal-launch-btn blue mc-font" id="launchDesktopBtn2" type="button">Launch Desktop</button>
+        </article>
+
+        <article class="portal-panel mobile">
+          <div class="portal-top">
+            <div class="portal-icon" aria-hidden="true">📱</div>
+            <span class="tag mc-font" id="mobileVersionTag2">v1.8.8</span>
+          </div>
+
+          <h3 class="portal-title mc-font">Mobile Portal</h3>
+          <div class="portal-path mono" id="mobilePortalPathText2">/mobile.html</div>
+          <p class="portal-desc">Best for phones and touch devices using the mobile client route.</p>
+          <button class="portal-launch-btn green mc-font" id="launchMobileBtn2" type="button">Launch Mobile</button>
+        </article>
+      </div>
+
+      <div class="modal-action-row">
+        <button class="mini-btn gold mc-font" id="portalCopyWssBtn" type="button">Copy WSS</button>
+        <button class="mini-btn dark mc-font" id="portalGuideBtn" type="button">Guide</button>
+        <button class="mini-btn dark mc-font" id="portalDoneBtn" type="button">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast mc-font" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const SERVER = {
+      name: "SelahMC",
+      tagline: "Join SelahMC on Eaglercraft, Java, or Bedrock with quick connection info, portal access, and easy copy actions.",
+      version: "1.8.8",
+      siteUrl: "https://selahmc.net",
+      wss: "wss://play.selahmc.net/",
+      javaHost: "play.selahmc.net",
+      javaPort: 25565,
+      bedrockHost: "bedrock.selahmc.net",
+      bedrockPort: 19132,
+      desktopPortalPath: "/game.html",
+      mobilePortalPath: "/mobile.html",
+      discordUrl: "#",
+      healthPath: "",
+      motdPool: [
+        "Portal ready. Pick desktop or mobile, add the server, and join.",
+        "Quick connect cards loaded for Eagler, Java, and Bedrock.",
+        "Copy the right address, launch the client, and get in fast.",
+        "SelahMC is ready for browser, launcher, and Bedrock players."
+      ]
+    };
+
+    const LOADER = {
+      minVisibleTime: 6500,
+      domReadyDelay: 2200,
+      loadDelay: 2600,
+      fallbackDelay: 7500,
+      progressInterval: 160,
+      maxBeforeFinish: 94
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    const javaFull =
+      SERVER.javaHost
+        ? ((SERVER.javaPort && SERVER.javaPort !== 25565) ? `${SERVER.javaHost}:${SERVER.javaPort}` : SERVER.javaHost)
+        : "";
+
+    const bedrockFull = `${SERVER.bedrockHost}:${SERVER.bedrockPort}`;
+
+    $("footerYear").textContent = new Date().getFullYear();
+
+    [
+      ["serverNameText", SERVER.name],
+      ["serverVersionText", SERVER.version],
+      ["serverWssText", SERVER.wss],
+      ["serverJavaText", javaFull],
+      ["serverBedrockText", bedrockFull],
+      ["desktopPathText", SERVER.desktopPortalPath],
+      ["mobilePathText", SERVER.mobilePortalPath],
+      ["wssText", SERVER.wss],
+      ["javaText", javaFull],
+      ["bedrockText", bedrockFull],
+      ["javaPortTag", SERVER.javaPort === 25565 ? "25565" : String(SERVER.javaPort)],
+      ["desktopVersionTag", `v${SERVER.version}`],
+      ["mobileVersionTag", `v${SERVER.version}`],
+      ["desktopVersionTag2", `v${SERVER.version}`],
+      ["mobileVersionTag2", `v${SERVER.version}`],
+      ["desktopPortalPathText", SERVER.desktopPortalPath],
+      ["mobilePortalPathText", SERVER.mobilePortalPath],
+      ["desktopPortalPathText2", SERVER.desktopPortalPath],
+      ["mobilePortalPathText2", SERVER.mobilePortalPath],
+      ["guideWssText", SERVER.wss],
+      ["guideJavaText", javaFull],
+      ["guideBedrockText", bedrockFull],
+      ["portalInlineWss", SERVER.wss],
+      ["heroTagline", SERVER.tagline],
+      ["footerAddress", SERVER.javaHost]
+    ].forEach(([id, value]) => {
+      const el = $(id);
+      if (el) el.textContent = value;
+    });
+
+    const toast = $("toast");
+    let toastTimer = null;
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2200);
+    }
+
+    async function copyText(text, label = "Copied!") {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast(label);
+      } catch (error) {
+        const fallbackInput = document.createElement("textarea");
+        fallbackInput.value = text;
+        document.body.appendChild(fallbackInput);
+        fallbackInput.select();
+        fallbackInput.setSelectionRange(0, 99999);
+
+        try {
+          document.execCommand("copy");
+          showToast(label);
+        } catch (err) {
+          showToast("Copy failed");
+        }
+
+        document.body.removeChild(fallbackInput);
+      }
+    }
+
+    function inviteText() {
+      return `${SERVER.name}
+
+${SERVER.tagline}
+
+Eagler (WSS):
+${SERVER.wss}
+
+Java:
+${javaFull}
+
+Bedrock:
+${SERVER.bedrockHost}
+Port: ${SERVER.bedrockPort}
+
+Portal:
+Desktop -> ${SERVER.desktopPortalPath}
+Mobile -> ${SERVER.mobilePortalPath}
+
+Discord:
+${SERVER.discordUrl}`;
+    }
+
+    function allAddressesText() {
+      return `${SERVER.name}
+
+Eagler (WSS):
+${SERVER.wss}
+
+Java:
+${javaFull}
+
+Bedrock:
+${bedrockFull}`;
+    }
+
+    function launchPortal(path) {
+      if (!path || path === "#") {
+        showToast("Set your portal path in the SERVER config.");
+        return;
+      }
+
+      try {
+        localStorage.setItem("game", "true");
+      } catch (error) {}
+
+      window.location.href = path;
+    }
+
+    function scrollToId(id) {
+      const el = $(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    $("quickConnectBtn").addEventListener("click", () => scrollToId("connect"));
+    $("portalFromConnectBtn").addEventListener("click", () => openModal("portal"));
+    $("openPortalBtn").addEventListener("click", () => openModal("portal"));
+    $("openPortalBtn2").addEventListener("click", () => openModal("portal"));
+    $("openGuideBtn").addEventListener("click", () => openModal("guide"));
+    $("openGuideBtn2").addEventListener("click", () => openModal("guide"));
+
+    $("guidePortalBtn").addEventListener("click", () => {
+      closeModal("guide");
+      openModal("portal");
+    });
+
+    $("portalGuideBtn").addEventListener("click", () => {
+      closeModal("portal");
+      openModal("guide");
+    });
+
+    $("copyWssBtn").addEventListener("click", () => copyText(SERVER.wss, "Copied WSS"));
+    $("copyWssBtn2").addEventListener("click", () => copyText(SERVER.wss, "Copied WSS"));
+    $("guideCopyWssBtn").addEventListener("click", () => copyText(SERVER.wss, "Copied WSS"));
+    $("portalCopyWssBtn").addEventListener("click", () => copyText(SERVER.wss, "Copied WSS"));
+
+    $("copyJavaBtn").addEventListener("click", () => copyText(javaFull, "Copied Java"));
+    $("guideCopyJavaBtn").addEventListener("click", () => copyText(javaFull, "Copied Java"));
+
+    $("copyBedrockBtn").addEventListener("click", () => copyText(bedrockFull, "Copied Bedrock"));
+    $("guideCopyBedrockBtn").addEventListener("click", () => copyText(bedrockFull, "Copied Bedrock"));
+
+    $("copyInviteBtn").addEventListener("click", () => copyText(inviteText(), "Invite copied"));
+    $("copyInviteBtn2").addEventListener("click", () => copyText(inviteText(), "Invite copied"));
+    $("guideCopyInviteBtn").addEventListener("click", () => copyText(inviteText(), "Invite copied"));
+
+    $("copyAllBtn").addEventListener("click", () => copyText(allAddressesText(), "All addresses copied"));
+    $("copyAllBtn2").addEventListener("click", () => copyText(allAddressesText(), "All addresses copied"));
+
+    $("launchDesktopBtn").addEventListener("click", () => launchPortal(SERVER.desktopPortalPath));
+    $("launchDesktopBtn2").addEventListener("click", () => launchPortal(SERVER.desktopPortalPath));
+    $("launchMobileBtn").addEventListener("click", () => launchPortal(SERVER.mobilePortalPath));
+    $("launchMobileBtn2").addEventListener("click", () => launchPortal(SERVER.mobilePortalPath));
+
+    const discordBtn = $("discordBtn");
+    discordBtn.href = SERVER.discordUrl;
+    if (SERVER.discordUrl === "#") {
+      discordBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        scrollToId("faq");
+      });
+    }
+
+    const statusDot = $("statusDot");
+    const statusText = $("statusText");
+
+    function setStatus(label, online) {
+      statusText.textContent = label;
+      statusDot.classList.toggle("offline", !online);
+    }
+
+    async function checkStatus() {
+      if (!SERVER.healthPath) {
+        setStatus("Ready", true);
+        return;
+      }
+
+      try {
+        const response = await fetch(SERVER.healthPath, { cache: "no-store" });
+        if (!response.ok) throw new Error("Health check failed");
+        setStatus("Online", true);
+      } catch (error) {
+        setStatus("Offline", false);
+      }
+    }
+
+    checkStatus();
+    if (SERVER.healthPath) {
+      setInterval(checkStatus, 15000);
+    }
+
+    const menuToggle = $("menuToggle");
+    const navLinks = $("navLinks");
+
+    menuToggle.addEventListener("click", () => {
+      const isOpen = navLinks.classList.toggle("open");
+      menuToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    navLinks.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        navLinks.classList.remove("open");
+        menuToggle.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    const faqItems = document.querySelectorAll(".faq-item");
+    faqItems.forEach((item) => {
+      const button = item.querySelector(".faq-question");
+      const icon = button.querySelector("span:last-child");
+
+      button.addEventListener("click", () => {
+        const willOpen = !item.classList.contains("open");
+
+        faqItems.forEach((otherItem) => {
+          otherItem.classList.remove("open");
+          const otherIcon = otherItem.querySelector(".faq-question span:last-child");
+          if (otherIcon) otherIcon.textContent = "+";
+        });
+
+        if (willOpen) {
+          item.classList.add("open");
+          icon.textContent = "–";
+        }
+      });
+    });
+
+    function typeWriterLoop(element, messages, typingSpeed = 42, deletingSpeed = 24, pauseTime = 1400) {
+      let messageIndex = 0;
+      let charIndex = 0;
+      let isDeleting = false;
+
+      function tick() {
+        const currentMessage = messages[messageIndex];
+
+        if (!isDeleting) {
+          charIndex += 1;
+          element.textContent = currentMessage.slice(0, charIndex);
+
+          if (charIndex < currentMessage.length) {
+            setTimeout(tick, typingSpeed);
+          } else {
+            isDeleting = true;
+            setTimeout(tick, pauseTime);
+          }
+        } else {
+          charIndex -= 1;
+          element.textContent = currentMessage.slice(0, charIndex);
+
+          if (charIndex > 0) {
+            setTimeout(tick, deletingSpeed);
+          } else {
+            isDeleting = false;
+            messageIndex = (messageIndex + 1) % messages.length;
+            setTimeout(tick, 280);
+          }
+        }
+      }
+
+      tick();
+    }
+
+    typeWriterLoop($("motdText"), SERVER.motdPool);
+
+    const floatingBlocksContainer = $("floatingBlocks");
+
+    function createFloatingBlocks() {
+      const blockTypes = ["grass", "diamond", "stone"];
+      const total = window.innerWidth < 700 ? 10 : 16;
+
+      floatingBlocksContainer.innerHTML = "";
+
+      for (let i = 0; i < total; i += 1) {
+        const block = document.createElement("div");
+        const size = Math.floor(Math.random() * 34) + 22;
+        const type = blockTypes[Math.floor(Math.random() * blockTypes.length)];
+
+        block.className = `floating-block ${type}`;
+        block.style.width = `${size}px`;
+        block.style.height = `${size}px`;
+        block.style.left = `${Math.random() * 100}%`;
+        block.style.top = `${Math.random() * 84 + 6}%`;
+        block.style.animationDuration = `${Math.random() * 5 + 4}s`;
+        block.style.animationDelay = `${Math.random() * 3}s`;
+        block.style.opacity = `${Math.random() * 0.22 + 0.14}`;
+
+        floatingBlocksContainer.appendChild(block);
+      }
+    }
+
+    createFloatingBlocks();
+
+    let floatingBlocksResizeTimer = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(floatingBlocksResizeTimer);
+      floatingBlocksResizeTimer = setTimeout(createFloatingBlocks, 180);
+    });
+
+    const hero = $("hero");
+    const heroCopy = $("heroCopy");
+    const heroSide = $("heroSide");
+    const serverCard = $("serverCard");
+    const motionReduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    function resetHeroMotion() {
+      heroCopy.style.transform = "";
+      heroSide.style.transform = "";
+      serverCard.style.transform = "";
+    }
+
+    function heroMotionEnabled() {
+      return window.innerWidth > 860 && !motionReduced.matches;
+    }
+
+    hero.addEventListener("mousemove", (event) => {
+      if (!heroMotionEnabled()) {
+        resetHeroMotion();
+        return;
+      }
+
+      const rect = hero.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
+
+      const moveX = (x - 0.5) * 16;
+      const moveY = (y - 0.5) * 12;
+
+      heroCopy.style.transform = `translate(${moveX * -0.18}px, ${moveY * -0.18}px)`;
+      heroSide.style.transform = `translate(${moveX * 0.18}px, ${moveY * 0.18}px)`;
+      serverCard.style.transform = `rotateY(${moveX * 0.35}deg) rotateX(${moveY * -0.4}deg) translate3d(0, -2px, 0)`;
+    });
+
+    hero.addEventListener("mouseleave", resetHeroMotion);
+    window.addEventListener("resize", resetHeroMotion);
+    if (motionReduced.addEventListener) {
+      motionReduced.addEventListener("change", resetHeroMotion);
+    }
+
+    const revealItems = document.querySelectorAll(".reveal");
+    revealItems.forEach((item, index) => {
+      item.style.transitionDelay = `${Math.min(index * 45, 240)}ms`;
+    });
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.14
+    });
+
+    revealItems.forEach((item) => revealObserver.observe(item));
+
+    const guideModal = $("guideModal");
+    const portalModal = $("portalModal");
+
+    function openModal(which) {
+      const target = which === "guide" ? guideModal : portalModal;
+      target.classList.add("open");
+      target.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal(which) {
+      const target = which === "guide" ? guideModal : portalModal;
+      target.classList.remove("open");
+      target.setAttribute("aria-hidden", "true");
+
+      if (!guideModal.classList.contains("open") && !portalModal.classList.contains("open")) {
+        document.body.style.overflow = "";
+      }
+    }
+
+    $("closeGuideModalBtn").addEventListener("click", () => closeModal("guide"));
+    $("guideDoneBtn").addEventListener("click", () => closeModal("guide"));
+    $("closePortalModalBtn").addEventListener("click", () => closeModal("portal"));
+    $("portalDoneBtn").addEventListener("click", () => closeModal("portal"));
+
+    guideModal.addEventListener("click", (event) => {
+      if (event.target === guideModal) closeModal("guide");
+    });
+
+    portalModal.addEventListener("click", (event) => {
+      if (event.target === portalModal) closeModal("portal");
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeModal("guide");
+        closeModal("portal");
+      }
+    });
+
+    const preloader = $("preloader");
+    const loadingBarFill = $("loadingBarFill");
+    const loadingPercent = $("loadingPercent");
+    const loadingText = $("loadingText");
+
+    const loadingMessages = [
+      "Preparing block world...",
+      "Placing grass blocks...",
+      "Smelting diamond UI...",
+      "Syncing server vibes...",
+      "Generating portals...",
+      "Loading connection guide...",
+      "Spawning players...",
+      "Opening the realm..."
+    ];
+
+    let fakeProgress = 0;
+    let loaderMessageIndex = 0;
+    let loaderFinished = false;
+    const loaderStartTime = Date.now();
+
+    function updateLoadingUI(value) {
+      const safeValue = Math.max(0, Math.min(100, value));
+      loadingBarFill.style.width = `${safeValue}%`;
+      loadingPercent.textContent = `${Math.floor(safeValue)}%`;
+      loadingText.textContent = loadingMessages[loaderMessageIndex % loadingMessages.length];
+    }
+
+    updateLoadingUI(0);
+
+    const fakeLoaderInterval = setInterval(() => {
+      if (loaderFinished) return;
+
+      fakeProgress += Math.random() * 3 + 0.8;
+
+      if (fakeProgress > LOADER.maxBeforeFinish) {
+        fakeProgress = LOADER.maxBeforeFinish;
+      }
+
+      loaderMessageIndex += 1;
+      updateLoadingUI(fakeProgress);
+    }, LOADER.progressInterval);
+
+    function actuallyFinishLoader() {
+      if (loaderFinished) return;
+
+      loaderFinished = true;
+      clearInterval(fakeLoaderInterval);
+
+      const finishInterval = setInterval(() => {
+        fakeProgress += 1.8;
+        loaderMessageIndex += 1;
+        updateLoadingUI(fakeProgress);
+
+        if (fakeProgress >= 100) {
+          clearInterval(finishInterval);
+
+          setTimeout(() => {
+            preloader.classList.add("hidden");
+            document.body.classList.remove("preloading");
+          }, 500);
+        }
+      }, 40);
+    }
+
+    function finishLoadingOnce() {
+      const elapsed = Date.now() - loaderStartTime;
+      const remaining = Math.max(0, LOADER.minVisibleTime - elapsed);
+
+      setTimeout(() => {
+        actuallyFinishLoader();
+      }, remaining);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(finishLoadingOnce, LOADER.domReadyDelay);
+    });
+
+    window.addEventListener("load", () => {
+      setTimeout(finishLoadingOnce, LOADER.loadDelay);
+    });
+
+    setTimeout(() => {
+      finishLoadingOnce();
+    }, LOADER.fallbackDelay);
+  </script>
+</body>
+  </html>
