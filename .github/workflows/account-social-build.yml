@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - account-social-v3.0
+      - selahmc-corrected-v3.1
     paths:
       - 'selahmc-account-social/**'
       - '.github/workflows/account-social-build.yml'
@@ -36,10 +37,10 @@ jobs:
         run: |
           if ! mvn --batch-mode --no-transfer-progress clean verify > /tmp/selah-maven.log 2>&1; then
             echo '===== MAVEN FAILURE ====='
-            tail -140 /tmp/selah-maven.log
+            tail -180 /tmp/selah-maven.log
             exit 1
           fi
-          tail -35 /tmp/selah-maven.log
+          tail -45 /tmp/selah-maven.log
       - name: Report Maven failure on PR
         if: failure() && github.event_name == 'pull_request'
         env:
@@ -50,15 +51,19 @@ jobs:
             echo '### Account Social CI failure'
             echo
             echo '```text'
-            tail -120 /tmp/selah-maven.log 2>/dev/null || echo 'Maven log was unavailable.'
+            tail -160 /tmp/selah-maven.log 2>/dev/null || echo 'Maven log was unavailable.'
             echo '```'
           } > /tmp/ci-comment.md
           gh pr comment "$PR_NUMBER" --body-file /tmp/ci-comment.md
       - name: Validate browser JavaScript
-        run: node --check web/app.js
+        run: |
+          node --check web/app.js
+          node --check web/password-login-ui.js
       - name: Validate shell scripts
         run: bash -n install.sh configure-caddy.sh
-      - name: Verify plugin archive contains metadata
+      - name: Verify plugin archive contains password gate
         run: |
           test -s target/SelahMCAccountSocial.jar
           jar tf target/SelahMCAccountSocial.jar | grep -qx 'plugin.yml'
+          jar tf target/SelahMCAccountSocial.jar | grep -q 'PasswordAuthGateListener.class'
+          unzip -p target/SelahMCAccountSocial.jar plugin.yml | grep -q 'version: 3.1.0'
