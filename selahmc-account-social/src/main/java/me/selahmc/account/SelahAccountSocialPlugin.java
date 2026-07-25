@@ -47,7 +47,7 @@ public final class SelahAccountSocialPlugin extends JavaPlugin {
             return;
         }
 
-        AuthGateListener listener = new AuthGateListener(this);
+        PasswordAuthGateListener listener = new PasswordAuthGateListener(this);
         getServer().getPluginManager().registerEvents(listener, this);
 
         Commands commands = new Commands(this);
@@ -80,8 +80,9 @@ public final class SelahAccountSocialPlugin extends JavaPlugin {
             }
         }, 20L * 60L, 20L * 300L);
 
-        getLogger().info("SelahMC Account + Social v3.0.0 enabled.");
+        getLogger().info("SelahMC Account + Social v3.1.0 enabled.");
         getLogger().info("Website API listening on " + getConfig().getString("web.bind", "127.0.0.1") + ":" + getConfig().getInt("web.port", 8788));
+        getLogger().info("Minecraft login requires the password created on the website.");
         getLogger().info("Unauthenticated players are " + (requireLogin ? "blocked until login" : "allowed while enforcement is disabled") + ".");
     }
 
@@ -208,10 +209,13 @@ public final class SelahAccountSocialPlugin extends JavaPlugin {
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (isAuthenticated(player)) continue;
             player.setInvulnerable(true);
-            player.sendActionBar(Component.text("Log in at selahmc.me/social, generate a code, then use /login <code>", NamedTextColor.LIGHT_PURPLE));
+            player.sendActionBar(Component.text(
+                "Create the matching account at selahmc.me/social, then use /login <website-password>",
+                NamedTextColor.LIGHT_PURPLE
+            ));
             player.showTitle(Title.title(
                 Component.text("Log into SelahMC", NamedTextColor.LIGHT_PURPLE),
-                Component.text("Create your account at selahmc.me/social", NamedTextColor.WHITE),
+                Component.text("Use the password you created on the website", NamedTextColor.WHITE),
                 Title.Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ofMillis(350))
             ));
         }
