@@ -30,12 +30,20 @@ if ! command -v mvn >/dev/null 2>&1; then
 fi
 
 cd "$PROJECT_DIR"
-echo "Building SelahMC Account + Social v3.0.0 with $JAVA_HOME..."
+echo "Building SelahMC Account + Social v3.1.0 password login with $JAVA_HOME..."
 mvn -DskipTests clean package
 
 BUILT_JAR="$PROJECT_DIR/target/SelahMCAccountSocial.jar"
 if [[ ! -s "$BUILT_JAR" ]]; then
   echo "ERROR: Expected build output was not created: $BUILT_JAR" >&2
+  exit 1
+fi
+if ! unzip -p "$BUILT_JAR" plugin.yml | grep -q 'version: 3.1.0'; then
+  echo "ERROR: Built JAR is not SelahMC Account + Social 3.1.0." >&2
+  exit 1
+fi
+if ! jar tf "$BUILT_JAR" | grep -q 'PasswordAuthGateListener.class'; then
+  echo "ERROR: Password login gate is missing from the built JAR." >&2
   exit 1
 fi
 
@@ -75,10 +83,11 @@ fi
 cat /tmp/selah-account-health.json
 echo
 
-echo "SelahMC Account + Social installed."
+echo "SelahMC Account + Social 3.1.0 installed."
 echo "Website: https://selahmc.me/social/"
 echo "Signup:  https://selahmc.me/signup"
 echo "Login:   https://selahmc.me/login"
 echo "Health:  https://selahmc.me/auth-api/health"
 echo
-echo "Players now create their account on the website, generate a one-time code, and use /login <code> in Minecraft."
+echo "Players create the matching account on the website and use /login <website-password> in Minecraft."
+echo "The password command is intercepted, masked, and cancelled before normal command dispatch."
