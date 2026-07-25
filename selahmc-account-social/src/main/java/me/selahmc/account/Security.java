@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 final class Security {
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final Pattern USERNAME = Pattern.compile("^[A-Za-z0-9_.-]{3,24}$");
+    private static final int BCRYPT_MAX_BYTES = 72;
 
     private Security() {}
 
@@ -28,10 +29,14 @@ final class Security {
         if (password == null || password.length() < minimumLength) {
             return "Password must contain at least " + minimumLength + " characters.";
         }
-        if (password.length() > 128) {
-            return "Password must be 128 characters or fewer.";
+        if (password.getBytes(StandardCharsets.UTF_8).length > BCRYPT_MAX_BYTES) {
+            return "Password must be 72 UTF-8 bytes or fewer.";
         }
         return null;
+    }
+
+    static boolean validBcryptLength(String password) {
+        return password != null && password.getBytes(StandardCharsets.UTF_8).length <= BCRYPT_MAX_BYTES;
     }
 
     static String hashPassword(String password, int cost) {
@@ -39,7 +44,7 @@ final class Security {
     }
 
     static boolean verifyPassword(String password, String hash) {
-        if (password == null || hash == null || hash.isBlank()) return false;
+        if (password == null || hash == null || hash.isBlank() || !validBcryptLength(password)) return false;
         try {
             return BCrypt.verifyer().verify(password.toCharArray(), hash).verified;
         } catch (RuntimeException ignored) {
