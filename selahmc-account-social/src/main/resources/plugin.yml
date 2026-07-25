@@ -1,0 +1,43 @@
+name: SelahMCAccountSocial
+version: 3.0.0
+main: me.selahmc.account.SelahAccountSocialPlugin
+api-version: '1.21'
+authors: [Lukas, OpenAI]
+description: Website accounts, Minecraft login gate, friends, people search, DMs, friend chat, and global chat.
+load: POSTWORLD
+commands:
+  login:
+    description: Log into SelahMC using the temporary code generated on the website.
+    usage: /login <code>
+  authstatus:
+    description: Show whether your Minecraft session is authenticated.
+    usage: /authstatus
+  friend:
+    description: Manage SelahMC friends.
+    usage: /friend <add|accept|decline|remove|list> [player]
+  msg:
+    aliases: [tell, whisper, w]
+    description: Send a private message to a friend.
+    usage: /msg <friend> <message>
+  reply:
+    aliases: [r]
+    description: Reply to your most recent private-message partner.
+    usage: /reply <message>
+  friendchat:
+    aliases: [fc]
+    description: Send a message to all online friends.
+    usage: /friendchat <message>
+  globalchat:
+    aliases: [gc]
+    description: Send a message to all authenticated online players.
+    usage: /globalchat <message>
+  accountadmin:
+    description: Admin controls for SelahMC accounts.
+    usage: /accountadmin <logout|disable|enable|reset-sessions> <player>
+permissions:
+  selahaccount.bypass:
+    description: Bypass the website account login gate.
+    default: op
+  selahaccount.admin:
+    description: Manage SelahMC accounts.
+    default: op
