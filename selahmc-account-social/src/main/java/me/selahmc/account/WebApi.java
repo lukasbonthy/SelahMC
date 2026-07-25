@@ -15,14 +15,12 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -98,7 +96,7 @@ final class WebApi {
         }
     }
 
-    private void health(HttpExchange exchange, String method) throws IOException {
+    private void health(HttpExchange exchange, String method) throws Exception {
         requireMethod(method, "GET");
         sendJson(exchange, 200, Map.of("ok", true, "service", "SelahMCAccountSocial", "version", "3.0.0"));
     }
@@ -396,6 +394,8 @@ final class WebApi {
             JsonElement value = JsonParser.parseString(new String(body, StandardCharsets.UTF_8));
             if (!value.isJsonObject()) throw new ClientError(400, "JSON object required.");
             return value.getAsJsonObject();
+        } catch (ClientError invalid) {
+            throw invalid;
         } catch (RuntimeException invalid) {
             throw new ClientError(400, "Invalid JSON request.");
         }
