@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f6b5d7" />
+  <meta name="description" content="Create your SelahMC account, log into Minecraft with its password, find friends, and chat." />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="stylesheet" href="/social/styles.css?v=3.1.0" />
+  <title>SelahMC Account & Friends</title>
+</head>
+<body>
+  <div class="petals" aria-hidden="true"></div>
+
+  <aside id="installBanner" class="install-banner hidden">
+    <div class="install-icon">✦</div>
+    <div><strong>Highly recommended: install SelahMC</strong><span>Keep your account, friends, alerts, party voice, and chats one tap away.</span></div>
+    <button id="installButton" class="button primary small">Install app</button>
+    <button id="dismissInstall" class="icon-button" aria-label="Dismiss">×</button>
+  </aside>
+
+  <main id="authView" class="auth-shell hidden">
+    <section class="auth-story glass">
+      <a class="brand" href="/"><span class="brand-mark">✝</span><span>SelahMC</span></a>
+      <div class="story-copy">
+        <span class="eyebrow">One account, everywhere</span>
+        <h1>Your SelahMC life now starts on the website.</h1>
+        <p>Create the account that protects your Minecraft username, unlocks the server, and connects friends, DMs, community chat, party voice, and the Companion overlay.</p>
+      </div>
+      <div class="story-cards">
+        <article><b>01</b><span>Sign up using your exact Minecraft username.</span></article>
+        <article><b>02</b><span>Create a private SelahMC password.</span></article>
+        <article><b>03</b><span>Join and use <code>/login &lt;website-password&gt;</code>.</span></article>
+      </div>
+      <blockquote>“Let all that you do be done in love.” <span>1 Corinthians 16:14</span></blockquote>
+    </section>
+
+    <section class="auth-card glass">
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" data-auth-mode="login">Log in</button>
+        <button class="auth-tab" data-auth-mode="signup">Sign up</button>
+      </div>
+
+      <form id="loginForm" class="auth-form">
+        <header><span class="eyebrow">Welcome back</span><h2>Log into SelahMC</h2><p>Use the account you created for your Minecraft username.</p></header>
+        <label>Minecraft username<input name="username" autocomplete="username" required minlength="3" maxlength="24" placeholder="YourMinecraftName" /></label>
+        <label>Password<input name="password" type="password" autocomplete="current-password" required minlength="10" maxlength="128" placeholder="Your password" /></label>
+        <button class="button primary wide" type="submit">Log in</button>
+      </form>
+
+      <form id="signupForm" class="auth-form hidden">
+        <header><span class="eyebrow">Create your identity</span><h2>Sign up for SelahMC</h2><p>Your account name must match the Minecraft username you will join with.</p></header>
+        <label>Minecraft username<input name="username" autocomplete="username" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_.-]+" placeholder="YourMinecraftName" /></label>
+        <label>Password<input name="password" type="password" autocomplete="new-password" required minlength="10" maxlength="128" placeholder="At least 10 characters" /></label>
+        <label>Confirm password<input name="confirm" type="password" autocomplete="new-password" required minlength="10" maxlength="128" placeholder="Type it again" /></label>
+        <p class="security-note">Use a unique password. SelahMC never needs your Microsoft, Mojang, Google, or Discord password.</p>
+        <button class="button primary wide" type="submit">Create account</button>
+      </form>
+      <div id="authError" class="form-error hidden" role="alert"></div>
+    </section>
+  </main>
+
+  <main id="appView" class="app-shell hidden">
+    <aside class="sidebar glass">
+      <a class="brand" href="/"><span class="brand-mark">✝</span><span>SelahMC</span></a>
+      <div class="profile-mini">
+        <div id="profileAvatar" class="avatar">S</div>
+        <div><strong id="profileName">Player</strong><span id="profileStatus"><i></i> Website account</span></div>
+      </div>
+      <nav id="navigation">
+        <button data-panel="people" class="active"><span>⌕</span>Find people</button>
+        <button data-panel="friends"><span>♡</span>Friends</button>
+        <button data-panel="messages"><span>✉</span>Messages</button>
+        <button data-panel="friends-feed"><span>✦</span>Friends chat</button>
+        <button data-panel="global"><span>◎</span>Community</button>
+        <button data-panel="minecraft"><span>◇</span>Minecraft login</button>
+      </nav>
+      <div class="sidebar-actions">
+        <a class="button ghost wide" href="/app">Party Companion</a>
+        <a class="button ghost wide" href="/play">Play SelahMC</a>
+        <button id="logoutButton" class="button danger-text wide">Log out</button>
+      </div>
+    </aside>
+
+    <section class="workspace">
+      <header class="workspace-header glass">
+        <div><span class="eyebrow" id="panelEyebrow">Community directory</span><h1 id="panelTitle">Find people</h1></div>
+        <div class="header-actions"><span id="onlineBadge" class="online-badge">● Connected</span><button id="refreshButton" class="icon-button" title="Refresh">↻</button></div>
+      </header>
+
+      <section id="panel-people" class="panel active">
+        <div class="search-card glass">
+          <div class="search-box"><span>⌕</span><input id="peopleSearch" type="search" placeholder="Search every registered SelahMC player…" autocomplete="off" /></div>
+          <p>Everyone who creates a SelahMC website account appears here. Search by their exact username or browse the full community.</p>
+        </div>
+        <div id="peopleList" class="people-grid"></div>
+        <button id="loadMorePeople" class="button ghost centered hidden">Load more people</button>
+      </section>
+
+      <section id="panel-friends" class="panel">
+        <div class="section-intro glass"><div><span class="eyebrow">Your circle</span><h2>Friends</h2><p>Friends can privately message you and see messages in friends chat.</p></div><button class="button primary" data-jump="people">Find people</button></div>
+        <div id="friendsList" class="people-grid"></div>
+      </section>
+
+      <section id="panel-messages" class="panel chat-layout">
+        <aside class="conversation-list glass">
+          <header><span class="eyebrow">Private</span><h2>Messages</h2></header>
+          <div class="search-box compact"><span>⌕</span><input id="friendSearch" type="search" placeholder="Search friends" /></div>
+          <div id="conversationFriends"></div>
+        </aside>
+        <article class="chat-card glass">
+          <header class="chat-header"><div id="dmAvatar" class="avatar">♡</div><div><strong id="dmTitle">Choose a friend</strong><span id="dmSubtitle">Private friend-to-friend messages</span></div></header>
+          <div id="dmMessages" class="message-list empty-chat"><div><b>Choose a friend to start talking.</b><span>Your conversation is private to the two website accounts.</span></div></div>
+          <form id="dmForm" class="message-composer"><input id="dmInput" maxlength="500" placeholder="Message a friend…" disabled /><button class="button primary" disabled>Send</button></form>
+        </article>
+      </section>
+
+      <section id="panel-friends-feed" class="panel single-chat">
+        <article class="chat-card glass">
+          <header class="chat-header"><div class="avatar">✦</div><div><strong>Friends chat</strong><span>Only you and your accepted friends can see this feed.</span></div></header>
+          <div id="friendsMessages" class="message-list"></div>
+          <form id="friendsForm" class="message-composer"><input id="friendsInput" maxlength="500" placeholder="Say something to your friends…" /><button class="button primary">Send</button></form>
+        </article>
+      </section>
+
+      <section id="panel-global" class="panel single-chat">
+        <article class="chat-card glass">
+          <header class="chat-header"><div class="avatar">◎</div><div><strong>SelahMC community</strong><span>Global website and in-game chat for authenticated players.</span></div></header>
+          <div id="globalMessages" class="message-list"></div>
+          <form id="globalForm" class="message-composer"><input id="globalInput" maxlength="500" placeholder="Message the SelahMC community…" /><button class="button primary">Send</button></form>
+        </article>
+      </section>
+
+      <section id="panel-minecraft" class="panel">
+        <div class="minecraft-grid">
+          <article class="login-code-card glass">
+            <span class="eyebrow">Unlock the server</span>
+            <h2>Log into Minecraft</h2>
+            <p>Join SelahMC using <strong id="minecraftUsername">your website username</strong>. Playing stays locked until the password for this website account is verified.</p>
+            <div class="code-result">
+              <span>Type this privately as a command in Minecraft</span>
+              <div class="command-box"><code>/login &lt;your website password&gt;</code><small>The plugin intercepts and masks the command instead of sending it as normal chat.</small></div>
+            </div>
+            <!-- Retained as hidden compatibility anchors for the older app.js. -->
+            <button id="generateCode" hidden disabled aria-hidden="true"></button>
+            <div id="codeResult" class="hidden" hidden aria-hidden="true"><button id="copyCommand"><code id="loginCommand"></code></button><p id="codeTimer"></p></div>
+          </article>
+          <article class="steps-card glass">
+            <h3>How login works</h3>
+            <ol><li><b>Create the website account</b><span>Use the exact Minecraft username you plan to join with.</span></li><li><b>Join SelahMC</b><span>You can look around, but movement, chat, items, and interactions stay locked.</span></li><li><b>Enter your password</b><span>Use <code>/login &lt;website-password&gt;</code>. You cannot select somebody else’s username in the command.</span></li></ol>
+            <div class="privacy-card"><b>Your password is never posted to public chat.</b><span>The login plugin consumes the command first, masks it for later command listeners, verifies the stored bcrypt hash, and then unlocks gameplay.</span></div>
+          </article>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="toastStack" class="toast-stack" aria-live="polite"></div>
+  <script src="/social/app.js?v=3.1.0" defer></script>
+  <script src="/social/password-login-ui.js?v=3.1.0" defer></script>
+</body>
+</html>
