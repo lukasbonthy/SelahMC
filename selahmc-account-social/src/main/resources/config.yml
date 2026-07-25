@@ -1,0 +1,22 @@
+web:
+  bind: 127.0.0.1
+  port: 8788
+  public-origin: https://selahmc.me
+  session-days: 30
+
+auth:
+  require-login: true
+  bypass-ops: true
+  code-expiry-seconds: 300
+  password-min-length: 10
+  bcrypt-cost: 12
+  login-attempts-per-15-minutes: 8
+  reminder-seconds: 4
+
+chat:
+  max-message-length: 500
+  global-enabled: true
+  friends-feed-enabled: true
+
+storage:
+  database-file: accounts-social.db
