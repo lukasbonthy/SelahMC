@@ -29,7 +29,13 @@ jobs:
         with:
           node-version: '22'
       - name: Validate Java and build shaded plugin
-        run: mvn --batch-mode --no-transfer-progress clean verify
+        run: |
+          if ! mvn --batch-mode --no-transfer-progress clean verify > /tmp/selah-maven.log 2>&1; then
+            echo '===== MAVEN FAILURE ====='
+            tail -140 /tmp/selah-maven.log
+            exit 1
+          fi
+          tail -35 /tmp/selah-maven.log
       - name: Validate browser JavaScript
         run: node --check web/app.js
       - name: Validate shell scripts
