@@ -6,9 +6,9 @@
 
   <groupId>me.selahmc</groupId>
   <artifactId>selahmc-account-social</artifactId>
-  <version>3.0.0</version>
+  <version>3.1.0</version>
   <name>SelahMC Account + Social</name>
-  <description>Website accounts, Minecraft login gate, friends, direct messages, people search, and community chat.</description>
+  <description>Website accounts, password-protected Minecraft login, friends, direct messages, people search, and community chat.</description>
 
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
