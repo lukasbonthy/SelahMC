@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#f6b5d7" />
-  <meta name="description" content="Create your SelahMC account, log into Minecraft, find friends, and chat." />
+  <meta name="description" content="Create your SelahMC account, log into Minecraft with its password, find friends, and chat." />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/social/styles.css?v=3.0.0" />
+  <link rel="stylesheet" href="/social/styles.css?v=3.1.0" />
   <title>SelahMC Account & Friends</title>
 </head>
 <body>
@@ -29,8 +29,8 @@
       </div>
       <div class="story-cards">
         <article><b>01</b><span>Sign up using your exact Minecraft username.</span></article>
-        <article><b>02</b><span>Generate a one-time code after you join.</span></article>
-        <article><b>03</b><span>Use <code>/login 12345678</code> and start playing.</span></article>
+        <article><b>02</b><span>Create a private SelahMC password.</span></article>
+        <article><b>03</b><span>Join and use <code>/login &lt;website-password&gt;</code>.</span></article>
       </div>
       <blockquote>“Let all that you do be done in love.” <span>1 Corinthians 16:14</span></blockquote>
     </section>
@@ -136,18 +136,19 @@
           <article class="login-code-card glass">
             <span class="eyebrow">Unlock the server</span>
             <h2>Log into Minecraft</h2>
-            <p>Join SelahMC using <strong id="minecraftUsername">your website username</strong>. You can look around, but playing stays locked until you enter a temporary code.</p>
-            <button id="generateCode" class="button primary wide">Generate Minecraft login code</button>
-            <div id="codeResult" class="code-result hidden">
-              <span>Type this in Minecraft</span>
-              <button id="copyCommand" class="command-box"><code id="loginCommand">/login 00000000</code><small>Click to copy</small></button>
-              <p id="codeTimer">Expires in 5:00</p>
+            <p>Join SelahMC using <strong id="minecraftUsername">your website username</strong>. Playing stays locked until the password for this website account is verified.</p>
+            <div class="code-result">
+              <span>Type this privately as a command in Minecraft</span>
+              <div class="command-box"><code>/login &lt;your website password&gt;</code><small>The plugin intercepts and masks the command instead of sending it as normal chat.</small></div>
             </div>
+            <!-- Retained as hidden compatibility anchors for the older app.js. -->
+            <button id="generateCode" hidden disabled aria-hidden="true"></button>
+            <div id="codeResult" class="hidden" hidden aria-hidden="true"><button id="copyCommand"><code id="loginCommand"></code></button><p id="codeTimer"></p></div>
           </article>
           <article class="steps-card glass">
             <h3>How login works</h3>
-            <ol><li><b>Join the server</b><span>Use the same Minecraft username as this account.</span></li><li><b>Generate a code here</b><span>Codes work once and expire after five minutes.</span></li><li><b>Run the command</b><span>Use <code>/login 12345678</code> inside Minecraft.</span></li></ol>
-            <div class="privacy-card"><b>Your password never goes into Minecraft chat.</b><span>The server receives only a disposable one-time code.</span></div>
+            <ol><li><b>Create the website account</b><span>Use the exact Minecraft username you plan to join with.</span></li><li><b>Join SelahMC</b><span>You can look around, but movement, chat, items, and interactions stay locked.</span></li><li><b>Enter your password</b><span>Use <code>/login &lt;website-password&gt;</code>. You cannot select somebody else’s username in the command.</span></li></ol>
+            <div class="privacy-card"><b>Your password is never posted to public chat.</b><span>The login plugin consumes the command first, masks it for later command listeners, verifies the stored bcrypt hash, and then unlocks gameplay.</span></div>
           </article>
         </div>
       </section>
@@ -155,6 +156,7 @@
   </main>
 
   <div id="toastStack" class="toast-stack" aria-live="polite"></div>
-  <script src="/social/app.js?v=3.0.0" defer></script>
+  <script src="/social/app.js?v=3.1.0" defer></script>
+  <script src="/social/password-login-ui.js?v=3.1.0" defer></script>
 </body>
 </html>
