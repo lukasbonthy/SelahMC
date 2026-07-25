@@ -1,14 +1,14 @@
 name: SelahMCAccountSocial
-version: 3.0.0
+version: 3.1.0
 main: me.selahmc.account.SelahAccountSocialPlugin
 api-version: '1.21'
 authors: [Lukas, OpenAI]
-description: Website accounts, Minecraft login gate, friends, people search, DMs, friend chat, and global chat.
+description: Website accounts, password-protected Minecraft login, friends, people search, DMs, friend chat, and global chat.
 load: POSTWORLD
 commands:
   login:
-    description: Log into SelahMC using the temporary code generated on the website.
-    usage: /login <code>
+    description: Log into the matching SelahMC website account using its password.
+    usage: /login <website-password>
   authstatus:
     description: Show whether your Minecraft session is authenticated.
     usage: /authstatus
