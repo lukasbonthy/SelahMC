@@ -7,10 +7,10 @@ web:
 auth:
   require-login: true
   bypass-ops: true
-  code-expiry-seconds: 300
   password-min-length: 10
   bcrypt-cost: 12
   login-attempts-per-15-minutes: 8
+  minecraft-login-attempts-per-10-minutes: 5
   reminder-seconds: 4
 
 chat:
