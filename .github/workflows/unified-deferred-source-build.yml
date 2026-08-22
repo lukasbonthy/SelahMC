@@ -3,6 +3,8 @@ name: Selah unified deferred source build
 on:
   push:
     branches: [ selah-unified-deferred-source ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -32,7 +34,6 @@ jobs:
       - name: Prove one source-built core
         run: |
           test -s work/javascript/classes.js
-          grep -aq 'Minecraft 1.12.2' work/javascript/classes.js || true
           echo "classes.js bytes: $(wc -c < work/javascript/classes.js)"
       - uses: actions/upload-artifact@v4
         if: always()
