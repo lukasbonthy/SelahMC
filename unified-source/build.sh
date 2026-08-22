@@ -15,7 +15,6 @@ DEFERRED_REPO="https://github.com/Eaglercraft-Archive/Eaglercraftx-u19-source.gi
 rm -rf "$WORK"
 mkdir -p "$WORK"
 exec > >(tee "$LOG") 2>&1
-
 say() { printf '\n===== %s =====\n' "$*"; }
 
 say "Clone Eaglercraft 1.12.2 baseline"
@@ -27,22 +26,23 @@ say "Clone deferred renderer reference"
 git clone --quiet --depth 1 "$DEFERRED_REPO" "$DEFERRED_UPSTREAM"
 printf 'deferred_ref=%s\n' "$(git -C "$DEFERRED_UPSTREAM" rev-parse HEAD)" >> "$REPORT"
 
-say "Locate source roots"
 BASE_MAIN="$BASE/src/main/java"
 BASE_GAME="$BASE/src/game/java"
 UP_MAIN="$DEFERRED_UPSTREAM/sources/main/java"
 UP_RES="$DEFERRED_UPSTREAM/sources/resources"
-for d in "$BASE_MAIN" "$BASE_GAME" "$UP_MAIN"; do
-  test -d "$d" || { echo "Missing expected source root: $d"; exit 20; }
-done
+for d in "$BASE_MAIN" "$BASE_GAME" "$UP_MAIN"; do test -d "$d" || exit 20; done
 
 say "Copy native deferred renderer source"
 SRC_DEFERRED="$UP_MAIN/net/lax1dude/eaglercraft/v1_8/opengl/ext/deferred"
 DST_DEFERRED="$BASE_MAIN/net/lax1dude/eaglercraft/opengl/ext/deferred"
-test -d "$SRC_DEFERRED" || { echo "Deferred source not found: $SRC_DEFERRED"; exit 21; }
 mkdir -p "$(dirname "$DST_DEFERRED")"
 rm -rf "$DST_DEFERRED"
 cp -a "$SRC_DEFERRED" "$DST_DEFERRED"
+
+# Deferred particle interface used by the forward/G-buffer particle renderers.
+mkdir -p "$BASE_MAIN/net/lax1dude/eaglercraft/minecraft"
+cp "$UP_MAIN/net/lax1dude/eaglercraft/v1_8/minecraft/IAcceleratedParticleEngine.java" \
+   "$BASE_MAIN/net/lax1dude/eaglercraft/minecraft/IAcceleratedParticleEngine.java"
 
 copy_if_present() {
   local src="$1" rel="$2"
@@ -74,12 +74,8 @@ test -s javascript/classes.js
 test -s javascript/assets.epk
 node --check javascript/classes.js
 for marker in EaglerDeferredPipeline GuiShaderConfig GuiShaderConfigList; do
-  if grep -aq "$marker" javascript/classes.js; then
-    printf '%s=present\n' "$marker" >> "$REPORT"
-  else
-    printf '%s=missing\n' "$marker" >> "$REPORT"
-    exit 30
-  fi
+  grep -aq "$marker" javascript/classes.js || exit 30
+  printf '%s=present\n' "$marker" >> "$REPORT"
 done
 printf 'classes_js_bytes=%s\n' "$(stat -c '%s' javascript/classes.js)" >> "$REPORT"
 printf 'assets_epk_bytes=%s\n' "$(stat -c '%s' javascript/assets.epk)" >> "$REPORT"
