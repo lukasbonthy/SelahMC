@@ -38,13 +38,12 @@ done
 
 say "Copy native deferred renderer source"
 SRC_DEFERRED="$UP_MAIN/net/lax1dude/eaglercraft/v1_8/opengl/ext/deferred"
-DST_DEFERRED="$BASE_MAIN/net/lax1dude/eaglercraft/v1_8/opengl/ext/deferred"
+DST_DEFERRED="$BASE_MAIN/net/lax1dude/eaglercraft/opengl/ext/deferred"
 test -d "$SRC_DEFERRED" || { echo "Deferred source not found: $SRC_DEFERRED"; exit 21; }
 mkdir -p "$(dirname "$DST_DEFERRED")"
 rm -rf "$DST_DEFERRED"
 cp -a "$SRC_DEFERRED" "$DST_DEFERRED"
 
-# Copy renderer resources into whichever resource roots exist in the 1.12 workspace.
 copy_if_present() {
   local src="$1" rel="$2"
   test -e "$src" || return 0
@@ -59,13 +58,12 @@ copy_if_present() {
 copy_if_present "$UP_RES/assets/eagler/glsl/deferred" "assets/eagler/glsl/deferred"
 copy_if_present "$UP_RES/assets/eagler/textures" "assets/eagler/textures"
 
-say "Apply mechanical 1.12 compatibility pass"
+say "Apply 1.12 compatibility pass"
 python3 "$ROOT/port_deferred.py" "$BASE" "$DEFERRED_UPSTREAM"
 
 say "Compile JavaScript"
 cd "$BASE"
 chmod +x gradlew CompileJS.sh CompileEPK.sh 2>/dev/null || true
-# Compile classes.js first. assets.epk is built afterward if the code succeeds.
 ./gradlew --no-daemon generateJavascript
 
 say "Compile EPK"
@@ -75,18 +73,14 @@ say "Verify output"
 test -s javascript/classes.js
 test -s javascript/assets.epk
 node --check javascript/classes.js
-if grep -aq 'EaglerDeferredPipeline' javascript/classes.js; then
-  echo 'deferred_pipeline=present' >> "$REPORT"
-else
-  echo 'deferred_pipeline=missing' >> "$REPORT"
-  exit 30
-fi
-if grep -aq 'GuiShaderConfig' javascript/classes.js; then
-  echo 'native_shader_gui=present' >> "$REPORT"
-else
-  echo 'native_shader_gui=missing' >> "$REPORT"
-  exit 31
-fi
+for marker in EaglerDeferredPipeline GuiShaderConfig GuiShaderConfigList; do
+  if grep -aq "$marker" javascript/classes.js; then
+    printf '%s=present\n' "$marker" >> "$REPORT"
+  else
+    printf '%s=missing\n' "$marker" >> "$REPORT"
+    exit 30
+  fi
+done
 printf 'classes_js_bytes=%s\n' "$(stat -c '%s' javascript/classes.js)" >> "$REPORT"
 printf 'assets_epk_bytes=%s\n' "$(stat -c '%s' javascript/assets.epk)" >> "$REPORT"
 cat "$REPORT"
