@@ -32,18 +32,21 @@ jobs:
       - name: Compile one TeaVM classes.js
         working-directory: work
         run: |
+          rm -f javascript/classes.js javascript/classes.js.map
+          printf '\ntasks.withType(JavaCompile).configureEach { options.compilerArgs += ["-Xmaxerrs", "1000"] }\n' >> build.gradle
           chmod +x gradlew
           ./gradlew generateJavascript --stacktrace
       - name: Prove one source-built core
         run: |
           test -s work/javascript/classes.js
+          test -s work/javascript/classes.js.map
           echo "classes.js bytes: $(wc -c < work/javascript/classes.js)"
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
           name: selah-unified-source-build
           path: |
             work/javascript/classes.js
             work/javascript/classes.js.map
             work/javascript/assets.epk
-          if-no-files-found: warn
+          if-no-files-found: error
