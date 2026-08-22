@@ -1,0 +1,45 @@
+name: Selah unified deferred source build
+
+on:
+  push:
+    branches: [ selah-unified-deferred-source ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Clone exact 1.12.2 renderer baseline
+        run: |
+          git clone https://github.com/lenabena67/eaglercraft-base-client.git work
+          cd work
+          git checkout 9d055f6f9cb40322768625226377508542e74a50
+      - name: Clone upstream native deferred renderer
+        run: git clone --depth 1 https://github.com/3kh0/eaglercraft-1.8.git deferred-upstream
+      - name: Port deferred source into the 1.12 tree
+        run: python3 tools/port_deferred_source.py work deferred-upstream
+      - name: Compile one TeaVM classes.js
+        working-directory: work
+        run: |
+          chmod +x gradlew
+          ./gradlew generateJavascript --stacktrace
+      - name: Prove one source-built core
+        run: |
+          test -s work/javascript/classes.js
+          grep -aq 'Minecraft 1.12.2' work/javascript/classes.js || true
+          echo "classes.js bytes: $(wc -c < work/javascript/classes.js)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selah-unified-source-build
+          path: |
+            work/javascript/classes.js
+            work/javascript/classes.js.map
+            work/javascript/assets.epk
+          if-no-files-found: warn
