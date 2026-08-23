@@ -1,0 +1,44 @@
+name: SelahMC Unified 1.12.2 Source Build
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/selah-unified-source.yml'
+      - 'unified-source/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Selah integration scripts
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Prepare and compile unified source
+        shell: bash
+        run: |
+          chmod +x unified-source/build.sh
+          unified-source/build.sh
+
+      - name: Upload build logs and output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selah-unified-source-build
+          if-no-files-found: warn
+          path: |
+            unified-source/work/build.log
+            unified-source/work/eagler112/javascript/classes.js
+            unified-source/work/eagler112/javascript/assets.epk
+            unified-source/work/report.txt
