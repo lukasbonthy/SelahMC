@@ -2,11 +2,13 @@
 use strict;
 use warnings;
 use Cwd qw(abs_path);
+use Fcntl qw(:flock);
 use File::Spec;
 use IO::Socket::INET;
 
 my $root = abs_path(shift @ARGV // q{.});
 my $port = shift @ARGV // 8000;
+my $diagnostics_log = shift @ARGV;
 die "site root is not a directory\n" unless defined $root && -d $root;
 
 my $server = IO::Socket::INET->new(
@@ -34,22 +36,33 @@ while (my $client = $server->accept()) {
     close $server;
     $client->autoflush(1);
     binmode $client;
-    serve_request($client, $root);
+    serve_request($client, $root, $diagnostics_log);
     close $client;
     exit 0;
 }
 
 sub serve_request {
-    my ($client, $site_root) = @_;
+    my ($client, $site_root, $diag_log) = @_;
     my $request = <$client>;
     return unless defined $request;
+    my %headers;
     while (defined(my $header = <$client>)) {
         last if $header =~ /^\r?\n$/;
+        if ($header =~ /^([^:]+):\s*(.*?)\r?\n$/) {
+            $headers{lc $1} = $2;
+        }
     }
 
-    my ($method, $path) = $request =~ m{^(GET|HEAD)\s+([^\s]+)\s+HTTP/}i;
-    return send_error($client, 405, 'Method Not Allowed') unless defined $method;
+    my ($method, $path) = $request =~ m{^([A-Z]+)\s+([^\s]+)\s+HTTP/}i;
+    return send_error($client, 400, 'Bad Request') unless defined $method;
     $path =~ s/[?#].*\z//;
+
+    if (uc($method) eq 'POST' && $path eq '/__selah_diag') {
+        return receive_diagnostic($client, \%headers, $diag_log);
+    }
+    return send_error($client, 405, 'Method Not Allowed')
+        unless uc($method) eq 'GET' || uc($method) eq 'HEAD';
+
     $path =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
     $path =~ s{^/+}{};
     $path = 'index.html' if $path eq q{};
@@ -82,6 +95,35 @@ sub serve_request {
         }
     }
     close $file;
+}
+
+sub receive_diagnostic {
+    my ($client, $headers, $diag_log) = @_;
+    return send_error($client, 404, 'Not Found') unless defined $diag_log;
+
+    my $length = $headers->{'content-length'};
+    return send_error($client, 411, 'Length Required')
+        unless defined $length && $length =~ /^\d+$/;
+    return send_error($client, 413, 'Payload Too Large') if $length > 16_384;
+
+    my $body = q{};
+    while (length($body) < $length) {
+        my $read = read($client, my $chunk, $length - length($body));
+        return send_error($client, 400, 'Incomplete Body') unless defined $read && $read > 0;
+        $body .= $chunk;
+    }
+    $body =~ s/[\r\n]+/\\n/g;
+    $body =~ s/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]//g;
+
+    open my $log, '>>:raw', $diag_log or return send_error($client, 500, 'Log Error');
+    flock($log, LOCK_EX);
+    print {$log} $body, "\n";
+    close $log;
+
+    print {$client} "HTTP/1.1 204 No Content\r\n";
+    print {$client} "Content-Length: 0\r\n";
+    print {$client} "Cache-Control: no-store\r\n";
+    print {$client} "Connection: close\r\n\r\n";
 }
 
 sub send_error {
