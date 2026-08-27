@@ -9,7 +9,7 @@ if [[ ! -f "${site_root}/.ready-v8.3.3" ]]; then
 fi
 
 if ! curl --fail --silent --max-time 2 http://127.0.0.1:8000/ >/dev/null 2>&1; then
-  nohup python3 -m http.server 8000 --bind 0.0.0.0 --directory "${site_root}" \
+  nohup perl "${repo_root}/.devcontainer/static-server.pl" "${site_root}" 8000 \
     >"${repo_root}/.selah-test-server.log" 2>&1 &
 fi
 
