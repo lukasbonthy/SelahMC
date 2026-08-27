@@ -30,7 +30,13 @@ done < "${manifest}"
 perl -0pi -e '
   my $count = s/v8\.3\.2/v8.3.3/g;
   die "unexpected v8.3.2 index reference count\n" unless $count == 4;
+  my $loader = qq{\t\t<script type="text/javascript" src="selah-loader-v8.3.3.js"></script>};
+  my $diagnostics = qq{\t\t<script type="text/javascript" src="selah-diagnostics.js"></script>\n$loader};
+  my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
+  die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
 ' "${stage}/index.html"
+
+cp "${repo_root}/.devcontainer/selah-diagnostics.js" "${stage}/selah-diagnostics.js"
 
 perl -0pi -e '
   my $count = s/8\.3\.2/8.3.3/g;
@@ -51,7 +57,8 @@ perl -0pi -e '
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-c73a44da32a9909e939ad6c163e8fcc4f3a9c6b25b4d8d5caa59e260cbcbff6a  index.html
+47abab16f3695c36bba344c69522633630323bd148d7a0877511894055a09d1c  index.html
+9b43cb00362580b7cb99b50c1a9a7ba4c273ee13ac6c721ee64e32d770dc02b8  selah-diagnostics.js
 eb97d558f6a776f4125f98a77ecc31c15b3052d07ab22a4cb87ea7b0d817a4a8  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
 ac3b0acac7919bcb53e5a60a2bb77c57e928aa2683731a292a52a8fd2bc8a744  selahmc-client-v8.3.3.js
