@@ -47,6 +47,11 @@ perl -0pi -e '
   my $anchor_count = () = /AJd\(c\);c\.cMt=b;/g;
   die "expected exactly one deferred first-use texture anchor\n"
     unless $anchor_count == 1;
+  my $texture_map_anchor = q{c=null;AJd(a);a.CV=0;};
+  my $texture_map_replacement = q{c=null;AJd(a);a.ri=null;a.Cq=null;a.uF=Bx();a.Y3=Cs();a.bFf=Cs();a.a7$=HO_(C(2101));a.ccL=b;a.CV=0;};
+  my $texture_map_count = s/\Q$texture_map_anchor\E/$texture_map_replacement/;
+  die "expected exactly one deferred TextureMap constructor anchor\n"
+    unless $texture_map_count == 1;
   my $version_count = () = /8\.3\.2/g;
   die "unexpected client version count\n" unless $version_count == 1;
   s/AJd\(c\);c\.cMt=b;/AJd(c);c.cpL=b;/;
@@ -61,7 +66,7 @@ perl -0pi -e '
 9b43cb00362580b7cb99b50c1a9a7ba4c273ee13ac6c721ee64e32d770dc02b8  selah-diagnostics.js
 eb97d558f6a776f4125f98a77ecc31c15b3052d07ab22a4cb87ea7b0d817a4a8  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-ac3b0acac7919bcb53e5a60a2bb77c57e928aa2683731a292a52a8fd2bc8a744  selahmc-client-v8.3.3.js
+e444a496210fd5b68e3ee7bc354d324c2588ac85f7258a829538839e08651923  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
