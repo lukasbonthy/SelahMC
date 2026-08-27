@@ -27,37 +27,26 @@ while IFS='|' read -r source_path target_path; do
     --output "${stage}/${target_path}"
 done < "${manifest}"
 
-python3 - "${stage}" <<'PY'
-from pathlib import Path
-import sys
+perl -0pi -e '
+  my $count = s/v8\.3\.2/v8.3.3/g;
+  die "unexpected v8.3.2 index reference count\n" unless $count == 4;
+' "${stage}/index.html"
 
-root = Path(sys.argv[1])
+perl -0pi -e '
+  my $count = s/8\.3\.2/8.3.3/g;
+  die "unexpected OptiFine bridge version count\n" unless $count == 2;
+' "${stage}/selah-optifine-bridge-v8.3.3.js"
 
-index_path = root / "index.html"
-index = index_path.read_text(encoding="utf-8")
-if index.count("v8.3.2") != 4:
-    raise SystemExit("unexpected v8.3.2 index reference count")
-index_path.write_text(index.replace("v8.3.2", "v8.3.3"), encoding="utf-8")
-
-bridge_path = root / "selah-optifine-bridge-v8.3.3.js"
-bridge = bridge_path.read_text(encoding="utf-8")
-if bridge.count("8.3.2") != 2:
-    raise SystemExit("unexpected OptiFine bridge version count")
-bridge_path.write_text(bridge.replace("8.3.2", "8.3.3"), encoding="utf-8")
-
-client_path = root / "selahmc-client-v8.3.3.js"
-client = client_path.read_text(encoding="utf-8")
-old_anchor = "AJd(c);c.cMt=b;"
-new_anchor = "AJd(c);c.cpL=b;"
-if client.count(old_anchor) != 1:
-    raise SystemExit("expected exactly one deferred first-use texture anchor")
-if client.count("8.3.2") != 1:
-    raise SystemExit("unexpected client version count")
-client = client.replace(old_anchor, new_anchor).replace("8.3.2", "8.3.3")
-if not client.endswith("\n"):
-    client += "\n"
-client_path.write_text(client, encoding="utf-8")
-PY
+perl -0pi -e '
+  my $anchor_count = () = /AJd\(c\);c\.cMt=b;/g;
+  die "expected exactly one deferred first-use texture anchor\n"
+    unless $anchor_count == 1;
+  my $version_count = () = /8\.3\.2/g;
+  die "unexpected client version count\n" unless $version_count == 1;
+  s/AJd\(c\);c\.cMt=b;/AJd(c);c.cpL=b;/;
+  s/8\.3\.2/8.3.3/;
+  $_ .= "\n" unless /\n\z/;
+' "${stage}/selahmc-client-v8.3.3.js"
 
 (
   cd "${stage}"
