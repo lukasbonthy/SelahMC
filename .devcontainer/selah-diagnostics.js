@@ -5,6 +5,9 @@
   var history = [];
   var maxHistory = 40;
   var maxPayload = 12000;
+  var loadStage = null;
+  var loadStageAt = 0;
+  var loadStageGeneration = 0;
 
   function describe(value) {
     try {
@@ -49,6 +52,36 @@
         keepalive: true
       }).catch(function() {});
     }catch(ignore) {}
+  }
+
+  function reportLoadStage(progress, label) {
+    if(typeof progress !== "number" || progress !== progress) {
+      return;
+    }
+    progress = Math.max(0, Math.min(100, progress));
+    if(loadStage !== null && progress <= loadStage) {
+      return;
+    }
+
+    loadStage = progress;
+    loadStageAt = Date.now();
+    loadStageGeneration += 1;
+    var generation = loadStageGeneration;
+    var cleanLabel = label == null ? "" : String(label);
+    post("loader.stage", [{ progress: progress, label: cleanLabel }]);
+
+    if(progress < 100 && typeof global.setTimeout === "function") {
+      global.setTimeout(function() {
+        if(generation !== loadStageGeneration || loadStage !== progress) {
+          return;
+        }
+        post("loader.stall", [{
+          elapsedMs: Math.max(0, Date.now() - loadStageAt),
+          label: cleanLabel,
+          progress: progress
+        }]);
+      }, 20000);
+    }
   }
 
   function listCount(value) {
@@ -135,4 +168,6 @@
     global.navigator && global.navigator.userAgent || "unknown user agent",
     global.location && global.location.href || "unknown location"
   ]);
+  global.__selahReportLoadStage = reportLoadStage;
+  reportLoadStage(4, "Starting SelahMC");
 })(window);
