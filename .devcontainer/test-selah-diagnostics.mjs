@@ -14,6 +14,7 @@ test("browser diagnostics report console and uncaught failures", async () => {
   }
 
   const requests = [];
+  const beacons = [];
   const listeners = new Map();
   const nativeMessages = [];
   const sandbox = {
@@ -35,7 +36,13 @@ test("browser diagnostics report console and uncaught failures", async () => {
       return { ok: true };
     },
     location: { href: "https://example.test/" },
-    navigator: { userAgent: "Test iPad" },
+    navigator: {
+      sendBeacon: (url, body) => {
+        beacons.push({ url, body: String(body) });
+        return true;
+      },
+      userAgent: "Test iPad"
+    },
     setTimeout: (callback) => {
       callback();
       return 1;
@@ -46,6 +53,13 @@ test("browser diagnostics report console and uncaught failures", async () => {
 
   vm.runInNewContext(source, sandbox, { filename: "selah-diagnostics.js" });
   sandbox.console.error("atlas exploded", new Error("texture failure"));
+  sandbox.__selahMipmapCrash({
+    BL: { toString: () => "minecraft:blocks/bad_sprite" },
+    ja: { data: [{ c: 1 }, { c: 1 }, { c: 1 }] },
+    mK: 16,
+    nP: 16,
+    pf: { c: 1 }
+  }, 4, new Error("mipmap exploded"));
   listeners.get("error")({
     message: "uncaught atlas error",
     filename: "selahmc-client.js",
@@ -63,4 +77,11 @@ test("browser diagnostics report console and uncaught failures", async () => {
   assert.match(payload, /unhandledrejection.*rejected texture load/);
   assert.equal(nativeMessages.some(([method]) => method === "error"), true);
   assert.equal(requests.every((request) => request.url === "/__selah_diag"), true);
+  assert.equal(beacons.length, 1);
+  assert.equal(beacons[0].url, "/__selah_diag");
+  assert.match(beacons[0].body, /mipmap\.crash/);
+  assert.match(beacons[0].body, /minecraft:blocks\/bad_sprite/);
+  assert.match(beacons[0].body, /mipmap exploded/);
+  assert.match(beacons[0].body, /\"mipmapLevel\":4/);
+  assert.match(beacons[0].body, /\"pbrFrameCounts\":\[1,1,1\]/);
 });
