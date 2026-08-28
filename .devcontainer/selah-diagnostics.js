@@ -27,12 +27,20 @@
     return describe(value).replace(/[\r\n]+/g, "\\n").slice(0, maxPayload);
   }
 
-  function post(kind, values) {
+  function post(kind, values, urgent) {
     var parts = [new Date().toISOString(), kind];
     for(var i = 0; i < values.length; ++i) {
       parts.push(clean(values[i]));
     }
     var body = parts.join(" | ").slice(0, maxPayload);
+    if(urgent && global.navigator &&
+        typeof global.navigator.sendBeacon === "function") {
+      try {
+        if(global.navigator.sendBeacon("/__selah_diag", body)) {
+          return;
+        }
+      }catch(ignore) {}
+    }
     try {
       global.fetch("/__selah_diag", {
         method: "POST",
@@ -42,6 +50,40 @@
       }).catch(function() {});
     }catch(ignore) {}
   }
+
+  function listCount(value) {
+    return value && typeof value.c === "number" ? value.c : null;
+  }
+
+  function spriteName(sprite) {
+    try {
+      return sprite && sprite.BL != null ? String(sprite.BL) : null;
+    }catch(ignore) {
+      return "[unprintable sprite name]";
+    }
+  }
+
+  global.__selahMipmapCrash = function(sprite, mipmapLevel, error) {
+    var pbrFrameCounts = null;
+    try {
+      if(sprite && sprite.ja && sprite.ja.data) {
+        pbrFrameCounts = [];
+        for(var i = 0; i < 3; ++i) {
+          pbrFrameCounts.push(listCount(sprite.ja.data[i]));
+        }
+      }
+    }catch(ignore) {}
+
+    post("mipmap.crash", [{
+      className: sprite && sprite.constructor && sprite.constructor.name || null,
+      height: sprite && typeof sprite.nP === "number" ? sprite.nP : null,
+      mipmapLevel: mipmapLevel,
+      name: spriteName(sprite),
+      pbrFrameCounts: pbrFrameCounts,
+      standardFrameCount: listCount(sprite && sprite.pf),
+      width: sprite && typeof sprite.mK === "number" ? sprite.mK : null
+    }, error], true);
+  };
 
   function remember(method, args) {
     var values = [];
