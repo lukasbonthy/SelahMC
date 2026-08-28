@@ -8,6 +8,7 @@
   var loadStage = null;
   var loadStageAt = 0;
   var loadStageGeneration = 0;
+  var animationFrameReported = false;
 
   function describe(value) {
     try {
@@ -95,6 +96,14 @@
       return "[unprintable sprite name]";
     }
   }
+
+  global.__selahAnimationFrameError = function(message, state) {
+    if(animationFrameReported) {
+      return;
+    }
+    animationFrameReported = true;
+    post("animation-frame.error", [message || "unknown animation-frame error", state], true);
+  };
 
   global.__selahMipmapCrash = function(sprite, mipmapLevel, error) {
     var pbrFrameCounts = null;
