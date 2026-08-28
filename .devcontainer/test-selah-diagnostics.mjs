@@ -17,6 +17,7 @@ test("browser diagnostics report console and uncaught failures", async () => {
   const beacons = [];
   const listeners = new Map();
   const nativeMessages = [];
+  const timers = [];
   const sandbox = {
     Date,
     Error,
@@ -43,15 +44,21 @@ test("browser diagnostics report console and uncaught failures", async () => {
       },
       userAgent: "Test iPad"
     },
-    setTimeout: (callback) => {
-      callback();
-      return 1;
+    setTimeout: (callback, delay) => {
+      timers.push({ callback, delay });
+      return timers.length;
     }
   };
   sandbox.window = sandbox;
   sandbox.addEventListener = (name, listener) => listeners.set(name, listener);
 
   vm.runInNewContext(source, sandbox, { filename: "selah-diagnostics.js" });
+  assert.equal(typeof sandbox.__selahReportLoadStage, "function");
+  sandbox.__selahReportLoadStage(65, "Planting the cherry grove");
+  sandbox.__selahReportLoadStage(65, "Planting the cherry grove");
+  sandbox.__selahReportLoadStage(80, "Painting every block");
+  assert.equal(timers.every(({ delay }) => delay === 20_000), true);
+  for (const { callback } of timers) callback();
   sandbox.console.error("atlas exploded", new Error("texture failure"));
   sandbox.__selahMipmapCrash({
     BL: { toString: () => "minecraft:blocks/bad_sprite" },
@@ -72,6 +79,18 @@ test("browser diagnostics report console and uncaught failures", async () => {
   await Promise.resolve();
 
   const payload = requests.map((request) => String(request.options.body)).join("\n");
+  const stageReports = requests.filter((request) =>
+    String(request.options.body).includes("loader.stage")
+  );
+  const stallReports = requests.filter((request) =>
+    String(request.options.body).includes("loader.stall")
+  );
+  assert.equal(stageReports.length, 3);
+  assert.match(stageReports[0].options.body, /"progress":4/);
+  assert.match(stageReports[1].options.body, /"progress":65/);
+  assert.match(stageReports[2].options.body, /"progress":80/);
+  assert.equal(stallReports.length, 1);
+  assert.match(stallReports[0].options.body, /"progress":80/);
   assert.match(payload, /console\.error.*atlas exploded/);
   assert.match(payload, /window\.error.*uncaught atlas error/);
   assert.match(payload, /unhandledrejection.*rejected texture load/);
