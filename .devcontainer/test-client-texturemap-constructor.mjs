@@ -13,6 +13,8 @@ const constructorMatch = client.match(/^function SD_BZY\([^\n]+$/m);
 const mipmapDiagnosticCall = "$rt_globals.__selahMipmapCrash(k,e,$$e)";
 const mipmapCompatibilityDispatch =
   'if(typeof k.eos==="function"){k.eos(e);}else{Fv2(k,e);}';
+const animationFrameDiagnosticCall =
+  "$rt_globals.__selahAnimationFrameError(i&&i.eh?$rt_ustr(i.eh):null,{pendingTokenConflict:DM(IsX,P(-1)),runtimeReady:!!IoU,timeoutId:IsZ,vsyncEnabled:!!IoV,waiterPresent:IsY!==null})";
 
 assert.ok(constructorMatch, "deferred TextureMap constructor SD_BZY is present");
 assert.equal(
@@ -24,6 +26,11 @@ assert.equal(
   client.split(mipmapCompatibilityDispatch).length - 1,
   1,
   "mipmap generation preserves PBR overrides and falls back to Tuff's base method",
+);
+assert.equal(
+  client.split(animationFrameDiagnosticCall).length - 1,
+  1,
+  "the animation-frame catch reports the hidden exception and waiter state once",
 );
 
 const runMipmapDispatch = vm.runInNewContext(
