@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=0cebf2af"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=e3f2b446"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -69,6 +69,11 @@ perl -0pi -e '
   my $atlas_state_count = s/\Q$atlas_state_anchor\E/$atlas_state_replacement/;
   die "expected exactly one deferred atlas state anchor\n"
     unless $atlas_state_count == 1;
+  my $missing_sprite_anchor = q!a.by_=SD_HNA(C(2101));!;
+  my $missing_sprite_replacement = q!a.by_=a.a7$;!;
+  my $missing_sprite_count = s/\Q$missing_sprite_anchor\E/$missing_sprite_replacement/;
+  die "expected exactly one deferred standard missing-sprite anchor\n"
+    unless $missing_sprite_count == 1;
   my $atlas_setup_replacement = q!case 0:$p=85;case 85:FyK(a);if(B()){break _;}$p=86;case 86:F6X(a);if(B()){break _;}$p=87;case 87:Gks(a);if(B()){break _;}$p=88;case 88:EBi(a);if(B()){break _;}$p=89;case 89:Ct7(a);if(B()){break _;}$p=2;case 2:$z=DcY();!;
   my $atlas_setup_count = s/case 0:\$p=1;case 1:Gks\(a\);if\s*\(B\(\)\)\{break _;\}\$p=2;case 2:\$z=DcY\(\);/$atlas_setup_replacement/;
   die "expected exactly one deferred atlas setup anchor\n"
@@ -113,11 +118,11 @@ perl -0pi -e '
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-e71780d90c94380fd485e280e012d1ce6396a89eec13658f946a21a5b8883baf  index.html
+795237adada6b2c454cacd27e3b806d084cb4e9d9a131b3af86367fea5372cdf  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-0cebf2afbacd2ec1b42291c7042cee8c418eaac51058ad79e67dc514d549859e  selahmc-client-v8.3.3.js
+e3f2b44640ed432b18eba9bd998207a43b7dd94ca529fdd3dde7ac515fe096f2  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
