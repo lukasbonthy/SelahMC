@@ -39,6 +39,14 @@ perl -0pi -e '
 cp "${repo_root}/.devcontainer/selah-diagnostics.js" "${stage}/selah-diagnostics.js"
 
 perl -0pi -e '
+  my $progress_anchor = q{currentProgress = Math.max(currentProgress, Math.min(100, nextProgress));};
+  my $progress_replacement = qq{var previousProgress = currentProgress;\n\t\tcurrentProgress = Math.max(currentProgress, Math.min(100, nextProgress));\n\t\tif(currentProgress > previousProgress && typeof global.__selahReportLoadStage === "function") {\n\t\t\ttry {\n\t\t\t\tglobal.__selahReportLoadStage(currentProgress, nextLabel);\n\t\t\t}catch(ignore) {}\n\t\t}};
+  my $progress_count = s/\Q$progress_anchor\E/$progress_replacement/;
+  die "expected exactly one Selah loader progress anchor\n"
+    unless $progress_count == 1;
+' "${stage}/selah-loader-v8.3.3.js"
+
+perl -0pi -e '
   my $count = s/8\.3\.2/8.3.3/g;
   die "unexpected OptiFine bridge version count\n" unless $count == 2;
 ' "${stage}/selah-optifine-bridge-v8.3.3.js"
@@ -73,8 +81,8 @@ perl -0pi -e '
   cd "${stage}"
   sha256sum --check <<'SUMS'
 47abab16f3695c36bba344c69522633630323bd148d7a0877511894055a09d1c  index.html
-e382334a4ba9ca1f7c243d9050922c26188ca0724adfe0868d3c143b408d0cd4  selah-diagnostics.js
-eb97d558f6a776f4125f98a77ecc31c15b3052d07ab22a4cb87ea7b0d817a4a8  selah-loader-v8.3.3.js
+73e080b93e5dfe1182b759b03e913c389148da3351cf89fc9f722e26d58a7075  selah-diagnostics.js
+766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
 aa57c021fbcf49e6b030b4a046d75353f392b821b2043966dc0ad4a2e3cdf149  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
