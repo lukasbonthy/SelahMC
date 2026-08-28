@@ -180,6 +180,77 @@ assert.equal(
 );
 assert.deepEqual(spriteDispatchCalls, [[tuffSprite, spriteFrames, textureMetadata]]);
 
+const baseFrameData = { kind: "tuff-frame-zero" };
+const frameUploadBoundary = new Error("frame-upload-boundary");
+const frameDispatchCalls = [];
+const frameResumedLocals = {
+  $p: 72,
+  a: { CV: 0 },
+  be: tuffSprite,
+  e: 0,
+};
+let frameResumeIndex = 0;
+const frameResumeStack = {
+  l() {
+    const name = resumeOrder[frameResumeIndex++];
+    return Object.hasOwn(frameResumedLocals, name)
+      ? frameResumedLocals[name]
+      : null;
+  },
+  s() {
+    throw new Error("the frame dispatch must not suspend");
+  },
+};
+const atlasFrameContext = {
+  A3b() {
+    return 16;
+  },
+  A4E(sprite, frameIndex) {
+    frameDispatchCalls.push([sprite, frameIndex]);
+    return baseFrameData;
+  },
+  A8R() {
+    return 16;
+  },
+  B() {
+    return false;
+  },
+  DI() {
+    return frameResumeStack;
+  },
+  Evi() {
+    return 0;
+  },
+  F(error) {
+    return error;
+  },
+  FCL() {
+    return 0;
+  },
+  Gn_(frameData) {
+    assert.equal(frameData, baseFrameData);
+    throw frameUploadBoundary;
+  },
+  Gt() {
+    return true;
+  },
+  K: class ConvertedThrowable extends Error {},
+};
+vm.createContext(atlasFrameContext);
+vm.runInContext(deferredAtlasSource, atlasFrameContext);
+let frameUploadError = null;
+try {
+  atlasFrameContext.SD_Dwf({}, "resource-manager");
+} catch (error) {
+  frameUploadError = error;
+}
+assert.equal(
+  frameUploadError,
+  frameUploadBoundary,
+  "a Tuff base sprite uploads frame zero through Tuff's frame-data dispatcher",
+);
+assert.deepEqual(frameDispatchCalls, [[tuffSprite, 0]]);
+
 const runMipmapDispatch = vm.runInNewContext(
   `(function(k,e,Fv2){${mipmapCompatibilityDispatch}})`,
 );
