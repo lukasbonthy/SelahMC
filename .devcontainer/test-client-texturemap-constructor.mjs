@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
@@ -10,6 +11,7 @@ const clientPath = path.resolve(
 );
 const client = fs.readFileSync(clientPath, "utf8");
 const index = fs.readFileSync(path.join(path.dirname(clientPath), "index.html"), "utf8");
+const clientFingerprint = crypto.createHash("sha256").update(client).digest("hex").slice(0, 8);
 const constructorMatch = client.match(/^function SD_BZY\([^\n]+$/m);
 const deferredAtlasStart = client.indexOf("function SD_Dwf(");
 const deferredAtlasEnd = client.indexOf("\nfunction ", deferredAtlasStart + 1);
@@ -27,9 +29,12 @@ const atlasDiagnosticCall =
 
 assert.ok(constructorMatch, "deferred TextureMap constructor SD_BZY is present");
 assert.ok(deferredAtlasSource, "deferred TextureMap atlas loader SD_Dwf is present");
-assert.match(
-  index,
-  /src="selahmc-client-v8\.3\.3\.js\?v=2fba6826"/,
+const clientScriptMatch = index.match(
+  /src="selahmc-client-v8\.3\.3\.js\?v=([0-9a-f]{8})"/,
+);
+assert.equal(
+  clientScriptMatch?.[1],
+  clientFingerprint,
   "the page requests the exact atlas-fixed client instead of a cached older build",
 );
 assert.equal(
@@ -111,6 +116,69 @@ assert.deepEqual(
   ],
   "the deferred atlas runs every Tuff texture-registration hook before stitching",
 );
+
+const tuffSprite = { kind: "tuff-base-sprite" };
+const spriteFrames = { kind: "decoded-frame-data" };
+const textureMetadata = { kind: "texture-metadata" };
+const spriteDispatchBoundary = new Error("sprite-dispatch-boundary");
+const spriteDispatchCalls = [];
+const resumeOrder = [
+  "$p", "bi", "bh", "bg", "bf", "be", "bd", "bc", "bb", "ba",
+  "z", "y", "x", "w", "v", "u", "t", "s", "r", "q", "p", "o",
+  "n", "m", "l", "k", "j", "i", "h", "g", "f", "e", "d", "c",
+  "b", "a",
+];
+const resumedLocals = {
+  $p: 22,
+  a: {},
+  j: spriteFrames,
+  n: tuffSprite,
+  q: textureMetadata,
+};
+let resumeIndex = 0;
+const resumeStack = {
+  l() {
+    const name = resumeOrder[resumeIndex++];
+    return Object.hasOwn(resumedLocals, name) ? resumedLocals[name] : null;
+  },
+  s() {
+    throw new Error("the sprite dispatch must not suspend");
+  },
+};
+const atlasSpriteContext = {
+  B() {
+    return false;
+  },
+  Bb: class ConvertedRuntimeError extends Error {},
+  Ci: class ConvertedResourceError extends Error {},
+  DI() {
+    return resumeStack;
+  },
+  Edo(sprite, frames, metadata) {
+    spriteDispatchCalls.push([sprite, frames, metadata]);
+    throw spriteDispatchBoundary;
+  },
+  F(error) {
+    return error;
+  },
+  Gt() {
+    return true;
+  },
+};
+vm.createContext(atlasSpriteContext);
+vm.runInContext(deferredAtlasSource, atlasSpriteContext);
+let spriteDispatchError = null;
+try {
+  atlasSpriteContext.SD_Dwf({}, "resource-manager");
+} catch (error) {
+  spriteDispatchError = error;
+}
+assert.equal(
+  spriteDispatchError,
+  spriteDispatchBoundary,
+  "a Tuff base sprite loads through Tuff's dispatcher instead of Alpha's missing virtual method",
+);
+assert.deepEqual(spriteDispatchCalls, [[tuffSprite, spriteFrames, textureMetadata]]);
 
 const runMipmapDispatch = vm.runInNewContext(
   `(function(k,e,Fv2){${mipmapCompatibilityDispatch}})`,
