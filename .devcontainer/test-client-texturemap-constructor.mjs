@@ -11,6 +11,8 @@ const clientPath = path.resolve(
 const client = fs.readFileSync(clientPath, "utf8");
 const constructorMatch = client.match(/^function SD_BZY\([^\n]+$/m);
 const mipmapDiagnosticCall = "$rt_globals.__selahMipmapCrash(k,e,$$e)";
+const mipmapCompatibilityDispatch =
+  'if(typeof k.eos==="function"){k.eos(e);}else{Fv2(k,e);}';
 
 assert.ok(constructorMatch, "deferred TextureMap constructor SD_BZY is present");
 assert.equal(
@@ -18,6 +20,27 @@ assert.equal(
   1,
   "the mipmap catch reports the raw sprite failure exactly once",
 );
+assert.equal(
+  client.split(mipmapCompatibilityDispatch).length - 1,
+  1,
+  "mipmap generation preserves PBR overrides and falls back to Tuff's base method",
+);
+
+const runMipmapDispatch = vm.runInNewContext(
+  `(function(k,e,Fv2){${mipmapCompatibilityDispatch}})`,
+);
+const dispatchCalls = [];
+runMipmapDispatch(
+  { eos: (level) => dispatchCalls.push(["pbr", level]) },
+  4,
+  (_sprite, level) => dispatchCalls.push(["base", level]),
+);
+runMipmapDispatch(
+  {},
+  2,
+  (_sprite, level) => dispatchCalls.push(["base", level]),
+);
+assert.deepEqual(dispatchCalls, [["pbr", 4], ["base", 2]]);
 
 const context = {
   AJd() {},
