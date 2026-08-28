@@ -53,6 +53,7 @@ test("browser diagnostics report console and uncaught failures", async () => {
   sandbox.addEventListener = (name, listener) => listeners.set(name, listener);
 
   vm.runInNewContext(source, sandbox, { filename: "selah-diagnostics.js" });
+  assert.equal(typeof sandbox.__selahAtlasCrash, "function");
   assert.equal(typeof sandbox.__selahReportLoadStage, "function");
   assert.equal(typeof sandbox.__selahAnimationFrameError, "function");
   sandbox.__selahReportLoadStage(65, "Planting the cherry grove");
@@ -76,6 +77,11 @@ test("browser diagnostics report console and uncaught failures", async () => {
     "Already waiting for vsync!",
     animationFrameState
   );
+  sandbox.__selahAtlasCrash("Unable to fit: bad_sprite - size: 32x4096", {
+    atlasPath: "textures",
+    mipmapLevels: 4
+  });
+  sandbox.__selahAtlasCrash("duplicate atlas report", {});
   sandbox.__selahMipmapCrash({
     BL: { toString: () => "minecraft:blocks/bad_sprite" },
     ja: { data: [{ c: 1 }, { c: 1 }, { c: 1 }] },
@@ -112,16 +118,21 @@ test("browser diagnostics report console and uncaught failures", async () => {
   assert.match(payload, /unhandledrejection.*rejected texture load/);
   assert.equal(nativeMessages.some(([method]) => method === "error"), true);
   assert.equal(requests.every((request) => request.url === "/__selah_diag"), true);
-  assert.equal(beacons.length, 2);
+  assert.equal(beacons.length, 3);
   assert.equal(beacons[0].url, "/__selah_diag");
   assert.match(beacons[0].body, /animation-frame\.error/);
   assert.match(beacons[0].body, /Already waiting for vsync!/);
   assert.match(beacons[0].body, /\"pendingTokenConflict\":true/);
   assert.match(beacons[0].body, /\"timeoutId\":17/);
   assert.equal(beacons[1].url, "/__selah_diag");
-  assert.match(beacons[1].body, /mipmap\.crash/);
-  assert.match(beacons[1].body, /minecraft:blocks\/bad_sprite/);
-  assert.match(beacons[1].body, /mipmap exploded/);
-  assert.match(beacons[1].body, /\"mipmapLevel\":4/);
-  assert.match(beacons[1].body, /\"pbrFrameCounts\":\[1,1,1\]/);
+  assert.match(beacons[1].body, /atlas\.crash/);
+  assert.match(beacons[1].body, /Unable to fit: bad_sprite/);
+  assert.match(beacons[1].body, /\"atlasPath\":\"textures\"/);
+  assert.match(beacons[1].body, /\"mipmapLevels\":4/);
+  assert.equal(beacons[2].url, "/__selah_diag");
+  assert.match(beacons[2].body, /mipmap\.crash/);
+  assert.match(beacons[2].body, /minecraft:blocks\/bad_sprite/);
+  assert.match(beacons[2].body, /mipmap exploded/);
+  assert.match(beacons[2].body, /\"mipmapLevel\":4/);
+  assert.match(beacons[2].body, /\"pbrFrameCounts\":\[1,1,1\]/);
 });
