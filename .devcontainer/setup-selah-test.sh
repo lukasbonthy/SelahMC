@@ -57,6 +57,11 @@ perl -0pi -e '
   my $mipmap_count = s/\Q$mipmap_anchor\E/$mipmap_replacement/;
   die "expected exactly one deferred mipmap diagnostic anchor\n"
     unless $mipmap_count == 1;
+  my $mipmap_dispatch_anchor = q!try{k.eos(e);if(B()){break _;}}!;
+  my $mipmap_dispatch_replacement = q!try{if(typeof k.eos==="function"){k.eos(e);}else{Fv2(k,e);}if(B()){break _;}}!;
+  my $mipmap_dispatch_count = s/\Q$mipmap_dispatch_anchor\E/$mipmap_dispatch_replacement/;
+  die "expected exactly one deferred mipmap dispatch anchor\n"
+    unless $mipmap_dispatch_count == 1;
   my $version_count = () = /8\.3\.2/g;
   die "unexpected client version count\n" unless $version_count == 1;
   s/AJd\(c\);c\.cMt=b;/AJd(c);c.cpL=b;/;
@@ -71,7 +76,7 @@ perl -0pi -e '
 e382334a4ba9ca1f7c243d9050922c26188ca0724adfe0868d3c143b408d0cd4  selah-diagnostics.js
 eb97d558f6a776f4125f98a77ecc31c15b3052d07ab22a4cb87ea7b0d817a4a8  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-e2d1ab027bd93c4b2c676f67f43415571cfdcf1cc132a965c52304cfc63bbabe  selahmc-client-v8.3.3.js
+aa57c021fbcf49e6b030b4a046d75353f392b821b2043966dc0ad4a2e3cdf149  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
