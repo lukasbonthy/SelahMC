@@ -9,6 +9,7 @@
   var loadStageAt = 0;
   var loadStageGeneration = 0;
   var animationFrameReported = false;
+  var atlasReported = false;
 
   function describe(value) {
     try {
@@ -103,6 +104,14 @@
     }
     animationFrameReported = true;
     post("animation-frame.error", [message || "unknown animation-frame error", state], true);
+  };
+
+  global.__selahAtlasCrash = function(message, state) {
+    if(atlasReported) {
+      return;
+    }
+    atlasReported = true;
+    post("atlas.crash", [message || "unknown texture-atlas error", state], true);
   };
 
   global.__selahMipmapCrash = function(sprite, mipmapLevel, error) {
