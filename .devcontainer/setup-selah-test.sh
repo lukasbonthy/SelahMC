@@ -75,6 +75,11 @@ perl -0pi -e '
   my $animation_frame_count = s/\Q$animation_frame_anchor\E/$animation_frame_replacement/;
   die "expected exactly one animation-frame catch anchor\n"
     unless $animation_frame_count == 1;
+  my $atlas_crash_anchor = q~}I(y);}$p=43;continue _;case 36:~;
+  my $atlas_crash_replacement = q~}try{$rt_globals.__selahAtlasCrash&&$rt_globals.__selahAtlasCrash(y&&y.eh?$rt_ustr(y.eh):null,{atlasPath:a.b7L?$rt_ustr(a.b7L):null,mipmapLevels:a.Qy});}catch($$diag){}I(y);}$p=43;continue _;case 36:~;
+  my $atlas_crash_count = s/\Q$atlas_crash_anchor\E/$atlas_crash_replacement/;
+  die "expected exactly one deferred stitcher catch anchor\n"
+    unless $atlas_crash_count == 1;
   my $version_count = () = /8\.3\.2/g;
   die "unexpected client version count\n" unless $version_count == 1;
   s/AJd\(c\);c\.cMt=b;/AJd(c);c.cpL=b;/;
@@ -86,10 +91,10 @@ perl -0pi -e '
   cd "${stage}"
   sha256sum --check <<'SUMS'
 47abab16f3695c36bba344c69522633630323bd148d7a0877511894055a09d1c  index.html
-17e8ce86193cb229ffbe70f38c6c410f915c9393acc9c77360aa1960f1786e01  selah-diagnostics.js
+ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-9f6d71e0d56e0f8b1fbf3a650b1574ba45cc39ce835130b8c59e7e576764bf27  selahmc-client-v8.3.3.js
+41e61853ed21cf8d136df98e2c5e7401f4d2c05176679226920c9c8ed78725be  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
