@@ -10,8 +10,14 @@ const clientPath = path.resolve(
 );
 const client = fs.readFileSync(clientPath, "utf8");
 const constructorMatch = client.match(/^function SD_BZY\([^\n]+$/m);
+const mipmapDiagnosticCall = "$rt_globals.__selahMipmapCrash(k,e,$$e)";
 
 assert.ok(constructorMatch, "deferred TextureMap constructor SD_BZY is present");
+assert.equal(
+  client.split(mipmapDiagnosticCall).length - 1,
+  1,
+  "the mipmap catch reports the raw sprite failure exactly once",
+);
 
 const context = {
   AJd() {},
