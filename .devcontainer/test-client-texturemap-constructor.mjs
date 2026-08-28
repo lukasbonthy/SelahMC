@@ -357,10 +357,12 @@ assert.equal(
   "Tuff lookups and deferred uploads share one uploaded-sprite map",
 );
 assert.equal(textureMap.b7L, "textures", "deferred texture base path is preserved");
+const initializedMissingFrames = { kind: "initialized-missing-frames" };
+textureMap.a7$.pf = initializedMissingFrames;
 assert.equal(
-  textureMap.by_?.kind,
-  "deferred-standard-missing-sprite",
-  "deferred standard missing sprite is preserved",
+  textureMap.by_?.pf,
+  initializedMissingFrames,
+  "Tuff initialization supplies frame zero to the deferred standard missing sprite",
 );
 assert.equal(
   textureMap.byw?.kind,
