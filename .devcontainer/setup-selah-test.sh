@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=e65b7360"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=0cebf2af"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -78,6 +78,11 @@ perl -0pi -e '
   my $sprite_load_count = s/\Q$sprite_load_anchor\E/$sprite_load_replacement/;
   die "expected exactly one deferred base-sprite load anchor\n"
     unless $sprite_load_count == 1;
+  my $frame_data_anchor = q!be.cPT(e)!;
+  my $frame_data_replacement = q!typeof be.cPT==="function"?be.cPT(e):A4E(be,e)!;
+  my $frame_data_count = s/\Q$frame_data_anchor\E/$frame_data_replacement/;
+  die "expected exactly one deferred frame-data dispatch anchor\n"
+    unless $frame_data_count == 1;
   my $mipmap_anchor = q!catch($$e){$$je=F($$e);if($$je instanceof K){x=$$je;break a;}else{throw $$e;}}$p=17;continue _;}b=C(7587);!;
   my $mipmap_replacement = q!catch($$e){try{$rt_globals.__selahMipmapCrash&&$rt_globals.__selahMipmapCrash(k,e,$$e);}catch($$diag){}$$je=F($$e);if($$je instanceof K){x=$$je;break a;}else{throw $$e;}}$p=17;continue _;}b=C(7587);!;
   my $mipmap_count = s/\Q$mipmap_anchor\E/$mipmap_replacement/;
@@ -108,11 +113,11 @@ perl -0pi -e '
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-bf61a8846cb5076a95ffc50d5795995ecd36fc94024e49711286dff1c66e282f  index.html
+e71780d90c94380fd485e280e012d1ce6396a89eec13658f946a21a5b8883baf  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-e65b73607ce068657c9cdaa90c920325f4292ad874e334f5f97ee8e020b0d570  selahmc-client-v8.3.3.js
+0cebf2afbacd2ec1b42291c7042cee8c418eaac51058ad79e67dc514d549859e  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
