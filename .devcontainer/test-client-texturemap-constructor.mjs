@@ -9,6 +9,7 @@ const clientPath = path.resolve(
   process.argv[2] ?? ".selah-test/selahmc-client-v8.3.3.js",
 );
 const client = fs.readFileSync(clientPath, "utf8");
+const index = fs.readFileSync(path.join(path.dirname(clientPath), "index.html"), "utf8");
 const constructorMatch = client.match(/^function SD_BZY\([^\n]+$/m);
 const deferredAtlasStart = client.indexOf("function SD_Dwf(");
 const deferredAtlasEnd = client.indexOf("\nfunction ", deferredAtlasStart + 1);
@@ -26,6 +27,11 @@ const atlasDiagnosticCall =
 
 assert.ok(constructorMatch, "deferred TextureMap constructor SD_BZY is present");
 assert.ok(deferredAtlasSource, "deferred TextureMap atlas loader SD_Dwf is present");
+assert.match(
+  index,
+  /src="selahmc-client-v8\.3\.3\.js\?v=2fba6826"/,
+  "the page requests the exact atlas-fixed client instead of a cached older build",
+);
 assert.equal(
   client.split(mipmapDiagnosticCall).length - 1,
   1,
