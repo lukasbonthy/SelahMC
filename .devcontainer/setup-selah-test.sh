@@ -34,6 +34,10 @@ perl -0pi -e '
   my $diagnostics = qq{\t\t<script type="text/javascript" src="selah-diagnostics.js"></script>\n$loader};
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
+  my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=2fba6826"></script>};
+  my $client_count = s/\Q$client\E/$versioned_client/;
+  die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
 
 cp "${repo_root}/.devcontainer/selah-diagnostics.js" "${stage}/selah-diagnostics.js"
@@ -99,7 +103,7 @@ perl -0pi -e '
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-47abab16f3695c36bba344c69522633630323bd148d7a0877511894055a09d1c  index.html
+8ce31134af11f13775ecd9e03ba0821873de6a55541a8c6ee56da611d8e1601c  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
