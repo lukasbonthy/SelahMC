@@ -40,6 +40,7 @@ const context = {
     return { kind: "standard-missing-sprite", name };
   },
   LW() {},
+  MyW: { dqn: "active-logger" },
   SD_AEz: function DeferredMissingSprite() {
     this.kind = "deferred-missing-sprite";
   },
@@ -49,6 +50,7 @@ const context = {
   SD_HNA(name) {
     return { kind: "deferred-standard-missing-sprite", name };
   },
+  SD_LQF: null,
 };
 
 vm.createContext(context);
@@ -76,6 +78,11 @@ assert.equal(
 assert.equal(textureMap.ccL, "textures", "standard texture base path is initialized");
 assert.equal(textureMap.ri, null, "standard color framebuffer state is initialized");
 assert.equal(textureMap.Cq, null, "standard material framebuffer state is initialized");
+assert.equal(
+  context.SD_LQF?.dqn,
+  "active-logger",
+  "deferred recoverable-error logging uses the initialized TextureMap logger",
+);
 
 assert.equal(textureMap.E$?.c, 0, "deferred animated-sprite list is preserved");
 assert.equal(textureMap.KG?.kind, "map", "deferred registered-sprite map is preserved");
