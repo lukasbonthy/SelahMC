@@ -10,6 +10,12 @@ const clientPath = path.resolve(
 );
 const client = fs.readFileSync(clientPath, "utf8");
 const constructorMatch = client.match(/^function SD_BZY\([^\n]+$/m);
+const deferredAtlasStart = client.indexOf("function SD_Dwf(");
+const deferredAtlasEnd = client.indexOf("\nfunction ", deferredAtlasStart + 1);
+const deferredAtlasSource =
+  deferredAtlasStart >= 0 && deferredAtlasEnd >= 0
+    ? client.slice(deferredAtlasStart, deferredAtlasEnd)
+    : null;
 const mipmapDiagnosticCall = "$rt_globals.__selahMipmapCrash(k,e,$$e)";
 const mipmapCompatibilityDispatch =
   'if(typeof k.eos==="function"){k.eos(e);}else{Fv2(k,e);}';
@@ -19,6 +25,7 @@ const atlasDiagnosticCall =
   "$rt_globals.__selahAtlasCrash(y&&y.eh?$rt_ustr(y.eh):null,{atlasPath:a.b7L?$rt_ustr(a.b7L):null,mipmapLevels:a.Qy})";
 
 assert.ok(constructorMatch, "deferred TextureMap constructor SD_BZY is present");
+assert.ok(deferredAtlasSource, "deferred TextureMap atlas loader SD_Dwf is present");
 assert.equal(
   client.split(mipmapDiagnosticCall).length - 1,
   1,
@@ -38,6 +45,65 @@ assert.equal(
   client.split(atlasDiagnosticCall).length - 1,
   1,
   "the deferred stitcher catch reports the exact atlas failure once",
+);
+
+const atlasPrefixCalls = [];
+const atlasPrefixBoundary = new Error("atlas-prefix-boundary");
+const atlasPrefixContext = {
+  B() {
+    return false;
+  },
+  Ct7() {
+    atlasPrefixCalls.push("custom-items");
+  },
+  DcY() {
+    throw atlasPrefixBoundary;
+  },
+  DI() {
+    throw new Error("TeaVM continuation stack should not be needed");
+  },
+  EBi() {
+    atlasPrefixCalls.push("better-grass");
+  },
+  F6X() {
+    atlasPrefixCalls.push("natural-textures");
+  },
+  FyK() {
+    atlasPrefixCalls.push("texture-map");
+  },
+  Gks() {
+    atlasPrefixCalls.push("texture-icons");
+  },
+  Gs() {
+    throw new Error("invalid TeaVM state");
+  },
+  Gt() {
+    return false;
+  },
+};
+vm.createContext(atlasPrefixContext);
+vm.runInContext(deferredAtlasSource, atlasPrefixContext);
+let atlasPrefixError = null;
+try {
+  atlasPrefixContext.SD_Dwf({}, "resource-manager");
+} catch (error) {
+  atlasPrefixError = error;
+}
+assert.equal(
+  atlasPrefixError,
+  atlasPrefixBoundary,
+  "the atlas probe reaches the texture-size boundary",
+);
+assert.deepEqual(
+  atlasPrefixCalls,
+  [
+    "texture-map",
+    "natural-textures",
+    "texture-icons",
+    "better-grass",
+    "custom-items",
+  ],
+  "the deferred atlas runs every Tuff texture-registration hook before stitching",
 );
 
 const runMipmapDispatch = vm.runInNewContext(
@@ -130,6 +196,21 @@ assert.equal(
 assert.equal(textureMap.E$?.c, 0, "deferred animated-sprite list is preserved");
 assert.equal(textureMap.KG?.kind, "map", "deferred registered-sprite map is preserved");
 assert.equal(textureMap.cdi?.kind, "map", "deferred uploaded-sprite map is preserved");
+assert.equal(
+  textureMap.E$,
+  textureMap.uF,
+  "Tuff and deferred atlas loaders share one animated-sprite list",
+);
+assert.equal(
+  textureMap.KG,
+  textureMap.Y3,
+  "Tuff registration and deferred stitching share one registered-sprite map",
+);
+assert.equal(
+  textureMap.cdi,
+  textureMap.bFf,
+  "Tuff lookups and deferred uploads share one uploaded-sprite map",
+);
 assert.equal(textureMap.b7L, "textures", "deferred texture base path is preserved");
 assert.equal(
   textureMap.by_?.kind,
