@@ -70,6 +70,11 @@ perl -0pi -e '
   my $mipmap_dispatch_count = s/\Q$mipmap_dispatch_anchor\E/$mipmap_dispatch_replacement/;
   die "expected exactly one deferred mipmap dispatch anchor\n"
     unless $mipmap_dispatch_count == 1;
+  my $animation_frame_anchor = q!case 10:Dma(h,l,m);!;
+  my $animation_frame_replacement = q~case 10:try{$rt_globals.__selahAnimationFrameError&&$rt_globals.__selahAnimationFrameError(i&&i.eh?$rt_ustr(i.eh):null,{pendingTokenConflict:DM(IsX,P(-1)),runtimeReady:!!IoU,timeoutId:IsZ,vsyncEnabled:!!IoV,waiterPresent:IsY!==null});}catch($$diag){}Dma(h,l,m);~;
+  my $animation_frame_count = s/\Q$animation_frame_anchor\E/$animation_frame_replacement/;
+  die "expected exactly one animation-frame catch anchor\n"
+    unless $animation_frame_count == 1;
   my $version_count = () = /8\.3\.2/g;
   die "unexpected client version count\n" unless $version_count == 1;
   s/AJd\(c\);c\.cMt=b;/AJd(c);c.cpL=b;/;
@@ -81,10 +86,10 @@ perl -0pi -e '
   cd "${stage}"
   sha256sum --check <<'SUMS'
 47abab16f3695c36bba344c69522633630323bd148d7a0877511894055a09d1c  index.html
-73e080b93e5dfe1182b759b03e913c389148da3351cf89fc9f722e26d58a7075  selah-diagnostics.js
+17e8ce86193cb229ffbe70f38c6c410f915c9393acc9c77360aa1960f1786e01  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-aa57c021fbcf49e6b030b4a046d75353f392b821b2043966dc0ad4a2e3cdf149  selahmc-client-v8.3.3.js
+9f6d71e0d56e0f8b1fbf3a650b1574ba45cc39ce835130b8c59e7e576764bf27  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
