@@ -60,6 +60,15 @@ perl -0pi -e '
   my $texture_map_count = s/\Q$texture_map_anchor\E/$texture_map_replacement/;
   die "expected exactly one deferred TextureMap constructor anchor\n"
     unless $texture_map_count == 1;
+  my $atlas_state_anchor = q!a.E$=Bx();a.KG=Cs();a.cdi=Cs();!;
+  my $atlas_state_replacement = q!a.E$=Bx();a.uF=a.E$;a.KG=Cs();a.Y3=a.KG;a.cdi=Cs();a.bFf=a.cdi;!;
+  my $atlas_state_count = s/\Q$atlas_state_anchor\E/$atlas_state_replacement/;
+  die "expected exactly one deferred atlas state anchor\n"
+    unless $atlas_state_count == 1;
+  my $atlas_setup_replacement = q!case 0:$p=85;case 85:FyK(a);if(B()){break _;}$p=86;case 86:F6X(a);if(B()){break _;}$p=87;case 87:Gks(a);if(B()){break _;}$p=88;case 88:EBi(a);if(B()){break _;}$p=89;case 89:Ct7(a);if(B()){break _;}$p=2;case 2:$z=DcY();!;
+  my $atlas_setup_count = s/case 0:\$p=1;case 1:Gks\(a\);if\s*\(B\(\)\)\{break _;\}\$p=2;case 2:\$z=DcY\(\);/$atlas_setup_replacement/;
+  die "expected exactly one deferred atlas setup anchor\n"
+    unless $atlas_setup_count == 1;
   my $mipmap_anchor = q!catch($$e){$$je=F($$e);if($$je instanceof K){x=$$je;break a;}else{throw $$e;}}$p=17;continue _;}b=C(7587);!;
   my $mipmap_replacement = q!catch($$e){try{$rt_globals.__selahMipmapCrash&&$rt_globals.__selahMipmapCrash(k,e,$$e);}catch($$diag){}$$je=F($$e);if($$je instanceof K){x=$$je;break a;}else{throw $$e;}}$p=17;continue _;}b=C(7587);!;
   my $mipmap_count = s/\Q$mipmap_anchor\E/$mipmap_replacement/;
@@ -94,7 +103,7 @@ perl -0pi -e '
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-41e61853ed21cf8d136df98e2c5e7401f4d2c05176679226920c9c8ed78725be  selahmc-client-v8.3.3.js
+2fba68264d1d3cd9aa4b36e57fbe9f27257f48639b28c1082c37775ee620378d  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
