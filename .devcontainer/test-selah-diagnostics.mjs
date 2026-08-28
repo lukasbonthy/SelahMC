@@ -54,12 +54,28 @@ test("browser diagnostics report console and uncaught failures", async () => {
 
   vm.runInNewContext(source, sandbox, { filename: "selah-diagnostics.js" });
   assert.equal(typeof sandbox.__selahReportLoadStage, "function");
+  assert.equal(typeof sandbox.__selahAnimationFrameError, "function");
   sandbox.__selahReportLoadStage(65, "Planting the cherry grove");
   sandbox.__selahReportLoadStage(65, "Planting the cherry grove");
   sandbox.__selahReportLoadStage(80, "Painting every block");
   assert.equal(timers.every(({ delay }) => delay === 20_000), true);
   for (const { callback } of timers) callback();
   sandbox.console.error("atlas exploded", new Error("texture failure"));
+  const animationFrameState = {
+    pendingTokenConflict: true,
+    runtimeReady: true,
+    timeoutId: 17,
+    vsyncEnabled: true,
+    waiterPresent: true
+  };
+  sandbox.__selahAnimationFrameError(
+    "Already waiting for vsync!",
+    animationFrameState
+  );
+  sandbox.__selahAnimationFrameError(
+    "Already waiting for vsync!",
+    animationFrameState
+  );
   sandbox.__selahMipmapCrash({
     BL: { toString: () => "minecraft:blocks/bad_sprite" },
     ja: { data: [{ c: 1 }, { c: 1 }, { c: 1 }] },
@@ -96,11 +112,16 @@ test("browser diagnostics report console and uncaught failures", async () => {
   assert.match(payload, /unhandledrejection.*rejected texture load/);
   assert.equal(nativeMessages.some(([method]) => method === "error"), true);
   assert.equal(requests.every((request) => request.url === "/__selah_diag"), true);
-  assert.equal(beacons.length, 1);
+  assert.equal(beacons.length, 2);
   assert.equal(beacons[0].url, "/__selah_diag");
-  assert.match(beacons[0].body, /mipmap\.crash/);
-  assert.match(beacons[0].body, /minecraft:blocks\/bad_sprite/);
-  assert.match(beacons[0].body, /mipmap exploded/);
-  assert.match(beacons[0].body, /\"mipmapLevel\":4/);
-  assert.match(beacons[0].body, /\"pbrFrameCounts\":\[1,1,1\]/);
+  assert.match(beacons[0].body, /animation-frame\.error/);
+  assert.match(beacons[0].body, /Already waiting for vsync!/);
+  assert.match(beacons[0].body, /\"pendingTokenConflict\":true/);
+  assert.match(beacons[0].body, /\"timeoutId\":17/);
+  assert.equal(beacons[1].url, "/__selah_diag");
+  assert.match(beacons[1].body, /mipmap\.crash/);
+  assert.match(beacons[1].body, /minecraft:blocks\/bad_sprite/);
+  assert.match(beacons[1].body, /mipmap exploded/);
+  assert.match(beacons[1].body, /\"mipmapLevel\":4/);
+  assert.match(beacons[1].body, /\"pbrFrameCounts\":\[1,1,1\]/);
 });
