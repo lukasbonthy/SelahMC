@@ -52,6 +52,11 @@ perl -0pi -e '
   my $texture_map_count = s/\Q$texture_map_anchor\E/$texture_map_replacement/;
   die "expected exactly one deferred TextureMap constructor anchor\n"
     unless $texture_map_count == 1;
+  my $mipmap_anchor = q!catch($$e){$$je=F($$e);if($$je instanceof K){x=$$je;break a;}else{throw $$e;}}$p=17;continue _;}b=C(7587);!;
+  my $mipmap_replacement = q!catch($$e){try{$rt_globals.__selahMipmapCrash&&$rt_globals.__selahMipmapCrash(k,e,$$e);}catch($$diag){}$$je=F($$e);if($$je instanceof K){x=$$je;break a;}else{throw $$e;}}$p=17;continue _;}b=C(7587);!;
+  my $mipmap_count = s/\Q$mipmap_anchor\E/$mipmap_replacement/;
+  die "expected exactly one deferred mipmap diagnostic anchor\n"
+    unless $mipmap_count == 1;
   my $version_count = () = /8\.3\.2/g;
   die "unexpected client version count\n" unless $version_count == 1;
   s/AJd\(c\);c\.cMt=b;/AJd(c);c.cpL=b;/;
@@ -63,10 +68,10 @@ perl -0pi -e '
   cd "${stage}"
   sha256sum --check <<'SUMS'
 47abab16f3695c36bba344c69522633630323bd148d7a0877511894055a09d1c  index.html
-9b43cb00362580b7cb99b50c1a9a7ba4c273ee13ac6c721ee64e32d770dc02b8  selah-diagnostics.js
+e382334a4ba9ca1f7c243d9050922c26188ca0724adfe0868d3c143b408d0cd4  selah-diagnostics.js
 eb97d558f6a776f4125f98a77ecc31c15b3052d07ab22a4cb87ea7b0d817a4a8  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-8ecff9c43848cd3793fc00fc40f1c6b4cf0d9fde6708d19744365adad16107d7  selahmc-client-v8.3.3.js
+e2d1ab027bd93c4b2c676f67f43415571cfdcf1cc132a965c52304cfc63bbabe  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
