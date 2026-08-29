@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=4998b6a7"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=8834ff69"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -79,6 +79,30 @@ perl -0pi -e '
   my $pipeline_cache_count = s/\Q$pipeline_cache_anchor\E/$pipeline_cache_replacement/;
   die "expected exactly one fixed-function pipeline cache anchor\n"
     unless $pipeline_cache_count == 1;
+  my $pipeline_adapter_anchor = q!function SD_F_j(b){!;
+  my $pipeline_adapter_replacement = q!function SD_makeTuffExtensionAdapter(a){return {fK6:function(b,c,d){return SD_Ftq(a,b,c,d);},gi7:function(b,c,d,e){return SD_D05(a,b,c,d,e);},d9h:function(b){return SD_EMI(a,b);},glN:function(b){return b&8?80|(b&32?32:0):b&64?32:b&128?48:2943;},fPp:function(){return 9;},si:function(b,c,d,e){return SD_CBQ(a,b,c,d,e);},fF$:function(){}};}
+function SD_F_j(b){!;
+  my $pipeline_adapter_count = s/\Q$pipeline_adapter_anchor\E/$pipeline_adapter_replacement/;
+  die "expected exactly one deferred pipeline-provider anchor\n"
+    unless $pipeline_adapter_count == 1;
+  my $pipeline_provider_anchor = q!SD_LTv=b;return;!;
+  my $pipeline_provider_replacement = q!SD_LTv=b;LS5=b===null?null:SD_makeTuffExtensionAdapter(b);return;!;
+  my $pipeline_provider_count = s/\Q$pipeline_provider_anchor\E/$pipeline_provider_replacement/;
+  die "expected exactly one deferred pipeline-provider assignment\n"
+    unless $pipeline_provider_count == 1;
+  my @pipeline_routes = (
+    [q{SD_EVW}, q{SD_TUFF_FcU}, 1],
+    [q{SD_Dha}, q{SD_TUFF_DtO}, 1],
+    [q{SD_DA8}, q{SD_TUFF_DOQ}, 2],
+    [q{SD_ECZ}, q{SD_TUFF_EU2}, 1],
+  );
+  for my $route (@pipeline_routes) {
+    my ($alpha, $host, $expected) = @$route;
+    my $count = () = /(?<!function )\b\Q$alpha\E\(/g;
+    die "unexpected fixed-function route count for $alpha: $count\n"
+      unless $count == $expected;
+    s/(?<!function )\b\Q$alpha\E\(/${host}(/g;
+  }
   my $atlas_setup_replacement = q!case 0:$p=85;case 85:FyK(a);if(B()){break _;}$p=86;case 86:F6X(a);if(B()){break _;}$p=87;case 87:Gks(a);if(B()){break _;}$p=88;case 88:EBi(a);if(B()){break _;}$p=89;case 89:Ct7(a);if(B()){break _;}$p=2;case 2:$z=DcY();!;
   my $atlas_setup_count = s/case 0:\$p=1;case 1:Gks\(a\);if\s*\(B\(\)\)\{break _;\}\$p=2;case 2:\$z=DcY\(\);/$atlas_setup_replacement/;
   die "expected exactly one deferred atlas setup anchor\n"
@@ -123,11 +147,11 @@ perl -0pi -e '
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-0b13779ac189288ba54a79283939c45890a9939b79a9271b4f07f446672da483  index.html
+447c094f7c5db094167e81be464351c9fc71c5f76a1bce7f87d62a121d65dcf6  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-4998b6a7cd46e8974ca7ebf3df1f7626879b5f3527f17adce8495abc555b4aee  selahmc-client-v8.3.3.js
+8834ff698c40ae0a7a8699122242af0d75f1c34f8b9a892d6def7725ec1b62c9  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
