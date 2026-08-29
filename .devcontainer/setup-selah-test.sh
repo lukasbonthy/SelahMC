@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=8834ff69"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=40b51539"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -103,6 +103,34 @@ function SD_F_j(b){!;
       unless $count == $expected;
     s/(?<!function )\b\Q$alpha\E\(/${host}(/g;
   }
+  my $deferred_atlas_start = index($_, "function SD_Dwf(");
+  my $deferred_atlas_end = index($_, "\nfunction ", $deferred_atlas_start + 1);
+  die "deferred TextureMap atlas loader is missing\n"
+    unless $deferred_atlas_start >= 0 && $deferred_atlas_end > $deferred_atlas_start;
+  my $deferred_atlas = substr(
+    $_,
+    $deferred_atlas_start,
+    $deferred_atlas_end - $deferred_atlas_start,
+  );
+  my @atlas_field_routes = (
+    [q{a.ul}, q{a.ri}, 9],
+    [q{a.qA}, q{a.Cq}, 14],
+    [q{a.bQV}, q{a.R8}, 1],
+    [q{a.bqc}, q{a.Tf}, 2],
+  );
+  for my $route (@atlas_field_routes) {
+    my ($alpha, $host, $expected) = @$route;
+    my $count = () = $deferred_atlas =~ /\Q$alpha\E/g;
+    die "unexpected deferred TextureMap field count for $alpha: $count\n"
+      unless $count == $expected;
+    $deferred_atlas =~ s/\Q$alpha\E/$host/g;
+  }
+  substr(
+    $_,
+    $deferred_atlas_start,
+    $deferred_atlas_end - $deferred_atlas_start,
+    $deferred_atlas,
+  );
   my $atlas_setup_replacement = q!case 0:$p=85;case 85:FyK(a);if(B()){break _;}$p=86;case 86:F6X(a);if(B()){break _;}$p=87;case 87:Gks(a);if(B()){break _;}$p=88;case 88:EBi(a);if(B()){break _;}$p=89;case 89:Ct7(a);if(B()){break _;}$p=2;case 2:$z=DcY();!;
   my $atlas_setup_count = s/case 0:\$p=1;case 1:Gks\(a\);if\s*\(B\(\)\)\{break _;\}\$p=2;case 2:\$z=DcY\(\);/$atlas_setup_replacement/;
   die "expected exactly one deferred atlas setup anchor\n"
@@ -147,11 +175,11 @@ function SD_F_j(b){!;
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-447c094f7c5db094167e81be464351c9fc71c5f76a1bce7f87d62a121d65dcf6  index.html
+d6a18ec20843a50ebe4c4d1059ca773ab908afd412b8fa5681fdfb2bc3636dde  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-8834ff698c40ae0a7a8699122242af0d75f1c34f8b9a892d6def7725ec1b62c9  selahmc-client-v8.3.3.js
+40b51539753a4b447d5f5c2b29081fcc2814b86e73d5655e30414e5d3caacfff  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
