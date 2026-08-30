@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=15a26268"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=198d84a0"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -116,6 +116,29 @@ perl -0pi -e '
   my $deferred_draw_mode_count = s/h=b\.cL8;/h=b.cX0;/;
   die "expected exactly one deferred BufferBuilder draw-mode anchor\n"
     unless $deferred_draw_mode_count == 1;
+  my $deferred_draw_start = index($_, "function SD_FQU(");
+  my $deferred_draw_end = index($_, "\nfunction ", $deferred_draw_start + 1);
+  die "deferred tessellator draw function is missing\n"
+    unless $deferred_draw_start >= 0 && $deferred_draw_end > $deferred_draw_start;
+  my $deferred_draw = substr(
+    $_,
+    $deferred_draw_start,
+    $deferred_draw_end - $deferred_draw_start,
+  );
+  my $display_list_count = () = $deferred_draw =~ /\bSD_HWy\b/g;
+  die "unexpected deferred display-list state count: $display_list_count\n"
+    unless $display_list_count == 1;
+  my $display_list_buffer_count = () = $deferred_draw =~ /\bSD_HWz\b/g;
+  die "unexpected deferred display-list buffer count: $display_list_buffer_count\n"
+    unless $display_list_buffer_count == 7;
+  $deferred_draw =~ s/\bSD_HWy\b/IvN/g;
+  $deferred_draw =~ s/\bSD_HWz\b/IvO/g;
+  substr(
+    $_,
+    $deferred_draw_start,
+    $deferred_draw_end - $deferred_draw_start,
+    $deferred_draw,
+  );
   my $pipeline_adapter_anchor = q!function SD_F_j(b){!;
   my $pipeline_adapter_replacement = q!function SD_makeTuffExtensionAdapter(a){return {fK6:function(b,c,d){return SD_Ftq(a,b,c,d);},gi7:function(b,c,d,e){return SD_D05(a,b,c,d,e);},d9h:function(b){return SD_EMI(a,b);},glN:function(b){return b&8?80|(b&32?32:0):b&64?32:b&128?48:2943;},fPp:function(){return 9;},si:function(b,c,d,e){return SD_CBQ(a,b,c,d,e);},fF$:function(){}};}
 function SD_F_j(b){!;
@@ -212,11 +235,11 @@ function SD_F_j(b){!;
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-096fb393f0177eeba87f6cd31932c3875dd5a99bf48efffdaa9e54db5f3bbfc7  index.html
+5b125496c173d538fbff555b364f4080770b17beb6f4e48993f1c1008889eaa5  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-15a26268852f75fe33f5e97149e86e41dd5cf73104fd75940d2c269e49d369ad  selahmc-client-v8.3.3.js
+198d84a01899f9a5c8ad54e45fec239ebdb57ff8a0a19dca7e76f5c0ffb8a1b4  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
