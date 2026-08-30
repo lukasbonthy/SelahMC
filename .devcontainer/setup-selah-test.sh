@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=40b51539"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=5ecf1f8e"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -64,6 +64,11 @@ perl -0pi -e '
   my $texture_map_count = s/\Q$texture_map_anchor\E/$texture_map_replacement/;
   die "expected exactly one deferred TextureMap constructor anchor\n"
     unless $texture_map_count == 1;
+  my $entity_renderer_anchor = q!function Cbx(a,b,c){var $p,$z;$p=0;if(Gt()){var $T=DI();$p=$T.l();c=$T.l();b=$T.l();a=$T.l();}_:while(true){switch($p){case 0:if(SD_getEnabled()){$p=1;continue _;}$p=2;continue _;case 1:$z=SD_B4P(a,b,c);if(B()){break _;}return $z;case 2:$z=SD_TUFF_Cbx(a,b,c);if(B()){break _;}return $z;default:Gs();}}DI().s(a,b,c,$p);}!;
+  my $entity_renderer_replacement = q!function SD_aliasEntityRendererField(a,b,c){Object.defineProperty(a,b,{configurable:true,enumerable:true,get:function(){return a[c];},set:function(d){a[c]=d;}});}function SD_initDeferredEntityRendererState(a){SD_aliasEntityRendererField(a,"bTd","cmv");SD_aliasEntityRendererField(a,"cWv","d1k");SD_aliasEntityRendererField(a,"cga","coF");SD_aliasEntityRendererField(a,"buu","bOC");SD_aliasEntityRendererField(a,"sl","sn");SD_aliasEntityRendererField(a,"a4h","bbt");SD_aliasEntityRendererField(a,"bGW","dY1");SD_aliasEntityRendererField(a,"cug","eSn");SD_aliasEntityRendererField(a,"a7e","bfj");SD_aliasEntityRendererField(a,"bmx","bD5");a.bV5=new Ri;a.cK2=0.0;a.cK1=0.0;a.dqi=0.0;}function Cbx(a,b,c){var $p,$z;$p=0;if(Gt()){var $T=DI();$p=$T.l();c=$T.l();b=$T.l();a=$T.l();}_:while(true){switch($p){case 0:$z=SD_TUFF_Cbx(a,b,c);if(B()){break _;}SD_initDeferredEntityRendererState(a);return $z;default:Gs();}}DI().s(a,b,c,$p);}!;
+  my $entity_renderer_count = s/\Q$entity_renderer_anchor\E/$entity_renderer_replacement/;
+  die "expected exactly one EntityRenderer constructor dispatch anchor\n"
+    unless $entity_renderer_count == 1;
   my $atlas_state_anchor = q!a.E$=Bx();a.KG=Cs();a.cdi=Cs();!;
   my $atlas_state_replacement = q!a.E$=Bx();a.uF=a.E$;a.KG=Cs();a.Y3=a.KG;a.cdi=Cs();a.bFf=a.cdi;!;
   my $atlas_state_count = s/\Q$atlas_state_anchor\E/$atlas_state_replacement/;
@@ -175,11 +180,11 @@ function SD_F_j(b){!;
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-d6a18ec20843a50ebe4c4d1059ca773ab908afd412b8fa5681fdfb2bc3636dde  index.html
+c898978161bf5e0cda6e5a31bd327a66867ce76898e81cf217ed95ca74dcb42d  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-40b51539753a4b447d5f5c2b29081fcc2814b86e73d5655e30414e5d3caacfff  selahmc-client-v8.3.3.js
+5ecf1f8e8f26e5bf3e3d5de5cd36d2265cb4e7efe03432b79219150fa798e656  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
