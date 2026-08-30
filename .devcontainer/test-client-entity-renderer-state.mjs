@@ -200,19 +200,51 @@ assert.deepEqual(
   "the canonical Y-axis MouseFilter is initialized and reset",
 );
 
-context.DII = (client, viewEntity) => {
-  client.hl = viewEntity;
+const joiningPlayer = { b: 8, h: 64, d: 8 };
+let assignedViewEntity = null;
+let brightnessLookupCount = 0;
+const joiningMinecraft = {
+  Mj: itemRenderer,
+  bG: textureManager,
+  t: joiningPlayer,
+  O: { kind: "multiplayer-world" },
+  w: { bWc: false },
 };
-minecraft.hl = null;
-minecraft.t = null;
+Object.defineProperty(joiningMinecraft, "hl", {
+  configurable: true,
+  get() {
+    return null;
+  },
+  set(value) {
+    assignedViewEntity = value;
+  },
+});
+
+const joiningRenderer = new context["AI$"]();
+context.Cbx(joiningRenderer, joiningMinecraft, {
+  kind: "resource-manager",
+});
+context.DII = (minecraftState, entity) => {
+  minecraftState.hl = entity;
+};
+context.Erw = () => {
+  ++brightnessLookupCount;
+  throw updateBoundary;
+};
+
 assert.doesNotThrow(
-  () => context.Dmj(renderer),
-  "updateRenderer skips the transient multiplayer frame before a player exists",
+  () => context.Dmj(joiningRenderer),
+  "updateRenderer waits one frame when the multiplayer view entity is still unavailable",
 );
 assert.equal(
-  minecraft.hl,
-  null,
-  "the absent render-view entity remains untouched until the player is created",
+  assignedViewEntity,
+  joiningPlayer,
+  "updateRenderer still requests the joining player as the camera entity",
+);
+assert.equal(
+  brightnessLookupCount,
+  0,
+  "updateRenderer skips the world brightness lookup until the camera entity is readable",
 );
 
 renderer.cga = 1;
