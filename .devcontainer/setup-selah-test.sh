@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=c55260fd"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=f3fb6599"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -108,6 +108,9 @@ perl -0pi -e '
   my $pipeline_cache_count = s/\Q$pipeline_cache_anchor\E/$pipeline_cache_replacement/;
   die "expected exactly one fixed-function pipeline cache anchor\n"
     unless $pipeline_cache_count == 1;
+  my $deferred_draw_mode_count = s/h=b\.cL8;/h=b.cX0;/;
+  die "expected exactly one deferred BufferBuilder draw-mode anchor\n"
+    unless $deferred_draw_mode_count == 1;
   my $pipeline_adapter_anchor = q!function SD_F_j(b){!;
   my $pipeline_adapter_replacement = q!function SD_makeTuffExtensionAdapter(a){return {fK6:function(b,c,d){return SD_Ftq(a,b,c,d);},gi7:function(b,c,d,e){return SD_D05(a,b,c,d,e);},d9h:function(b){return SD_EMI(a,b);},glN:function(b){return b&8?80|(b&32?32:0):b&64?32:b&128?48:2943;},fPp:function(){return 9;},si:function(b,c,d,e){return SD_CBQ(a,b,c,d,e);},fF$:function(){}};}
 function SD_F_j(b){!;
@@ -204,11 +207,11 @@ function SD_F_j(b){!;
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-7ee671b9eb20372ba2fe547be61de2e85adbffc677210052c0233048daa95cca  index.html
+278b3e8f73242db3814f5b9f40587908def30b78ee86985a592825535bebdc90  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-c55260fd43c65cafb4d702cc63625d53533ab67cb57368fa999abd3cc269b1c3  selahmc-client-v8.3.3.js
+f3fb6599a2f7e4ceccf10b746d9c2c1f9f4ecacf35e5b322004d7119fc3b34ec  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
