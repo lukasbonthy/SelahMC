@@ -200,6 +200,21 @@ assert.deepEqual(
   "the canonical Y-axis MouseFilter is initialized and reset",
 );
 
+context.DII = (client, viewEntity) => {
+  client.hl = viewEntity;
+};
+minecraft.hl = null;
+minecraft.t = null;
+assert.doesNotThrow(
+  () => context.Dmj(renderer),
+  "updateRenderer skips the transient multiplayer frame before a player exists",
+);
+assert.equal(
+  minecraft.hl,
+  null,
+  "the absent render-view entity remains untouched until the player is created",
+);
+
 renderer.cga = 1;
 assert.equal(
   renderer.coF,
