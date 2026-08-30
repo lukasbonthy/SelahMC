@@ -216,6 +216,8 @@ const guiContext = {
   I(error) {
     throw error;
   },
+  IvN: null,
+  IvO: { bl5: 4096, data: new Uint8Array(4096), ex: 0 },
   IW(buffer) {
     return buffer.data.length;
   },
@@ -240,6 +242,101 @@ assert.deepEqual(
   [{ firstVertex: 0, primitiveMode: 7, vertexCount: 4 }],
   "the deferred GUI upload submits the primitive mode initialized by Tuff's BufferBuilder",
 );
+
+const displayListDraws = [];
+const displayListCopies = [];
+const displayList = { k2: -1, R5: 0, Zw: -1 };
+const displayListBuffer = {
+  bl5: 4096,
+  data: new Uint8Array(4096),
+  ex: 0,
+};
+const displayListBuilder = {
+  cX0: 7,
+  de: undefined,
+  kw: { data: new Uint8Array(64) },
+  pM: 4,
+  tc: { c3z: 8, rs: 20 },
+};
+const displayListContext = {
+  B() {
+    return false;
+  },
+  Bg() {},
+  C(id) {
+    return `string-${id}`;
+  },
+  Cxp() {},
+  Cya() {
+    return guiPipeline;
+  },
+  Da() {},
+  DI() {
+    throw new Error("display-list capture must not suspend");
+  },
+  DlA() {},
+  DQ4(_pipeline, primitiveMode, firstVertex, vertexCount) {
+    displayListDraws.push({ firstVertex, primitiveMode, vertexCount });
+  },
+  DtT() {
+    return guiVertexBuffer;
+  },
+  EDX() {},
+  EEW() {},
+  F5Y() {},
+  F8p() {},
+  Fj() {},
+  Fo: class RuntimeException {},
+  GFv() {},
+  GGr(buffer) {
+    return buffer;
+  },
+  GO8(target, source) {
+    displayListCopies.push({ source, target });
+  },
+  GTO() {
+    return 0;
+  },
+  Gs() {
+    throw new Error("invalid TeaVM state");
+  },
+  Gt() {
+    return false;
+  },
+  HeZ() {},
+  I(error) {
+    throw error;
+  },
+  IvN: displayList,
+  IvO: displayListBuffer,
+  IW(buffer) {
+    return buffer.data.length;
+  },
+  SD_HWL: null,
+  SD_HWy: null,
+  SD_HWz: { bl5: 4096, data: new Uint8Array(4096), ex: 0 },
+  SD_KTU: 0,
+  SD_TUFF_DOQ(value) {
+    return value;
+  },
+  V(left, right) {
+    return Math.imul(left, right);
+  },
+  YX() {},
+};
+displayListBuilder.de = displayListBuilder;
+vm.createContext(displayListContext);
+vm.runInContext(deferredDrawSource, displayListContext);
+displayListContext.SD_FQU({ de: displayListBuilder });
+assert.deepEqual(
+  displayListDraws,
+  [],
+  "an open Tuff display list captures deferred geometry instead of drawing it immediately",
+);
+assert.deepEqual(displayList, { k2: 8, R5: 4, Zw: 7 });
+assert.equal(displayListCopies.length, 1);
+assert.strictEqual(displayListCopies[0].source, displayListBuilder.kw);
+assert.strictEqual(displayListCopies[0].target, displayListBuffer);
 
 const providerCalls = [];
 const provider = { kind: "deferred-gbuffer-compiler" };
