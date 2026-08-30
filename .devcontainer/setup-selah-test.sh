@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=5ecf1f8e"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=d2a777e9"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -69,6 +69,25 @@ perl -0pi -e '
   my $entity_renderer_count = s/\Q$entity_renderer_anchor\E/$entity_renderer_replacement/;
   die "expected exactly one EntityRenderer constructor dispatch anchor\n"
     unless $entity_renderer_count == 1;
+  my $render_global_state_anchor = q!a.bQI=0.0;a.csC=0;a.dkr=null;a.cUY=null;}!;
+  my $render_global_state_replacement = q!a.bQI=0.0;a.csC=0;a.dkr=null;a.cUY=null;a.r4=null;a.PL=0;a.czM=0;a.cOB=0;a.bp8=0;}!;
+  my $render_global_state_count = s/\Q$render_global_state_anchor\E/$render_global_state_replacement/;
+  die "expected exactly one RenderGlobal state anchor\n"
+    unless $render_global_state_count == 1;
+  my $render_global_start_replacement = q~a.cOB=V(d,d);b=a.r4;if(b!==null){$p=6;continue _;}$p=7;continue _;case 2:~;
+  my $render_global_start_count = s~a\.cOB=V\(d,d\);b=a\.r4;if\(b!==null\)\{\$p=6;continue _;\}b\s*=a\.tb;\$p=3;continue _;case 2:~$render_global_start_replacement~;
+  die "expected exactly one deferred RenderGlobal first-build anchor\n"
+    unless $render_global_start_count == 1;
+  my $render_global_cleanup_anchor = q!case 6:GGU(b);if(B()){break _;}b=a.tb;$p=3;continue _;case 7:a:{try{Hn(b);if(B()){break _;}BM(b);break a;}catch($$e){$$je=F($$e);c=$$je;}BM(b);I(c);}b=new B04;!;
+  my $render_global_cleanup_replacement = q!case 6:GGU(b);if(B()){break _;}$p=7;continue _;case 7:b=new B04;!;
+  my $render_global_cleanup_count = s/\Q$render_global_cleanup_anchor\E/$render_global_cleanup_replacement/;
+  die "expected exactly one deferred RenderGlobal cleanup anchor\n"
+    unless $render_global_cleanup_count == 1;
+  my $render_global_dispatch_anchor = q!function DvM(a){var $p,$z;$p=0;if(Gt()){var $T=DI();$p=$T.l();a=$T.l();}_:while(true){switch($p){case 0:if(SD_getEnabled()){$p=1;continue _;}$p=2;continue _;case 1:$z=SD_Di4(a);if(B()){break _;}return $z;case 2:$z=SD_TUFF_DvM(a);if(B()){break _;}return $z;default:Gs();}}DI().s(a,$p);}!;
+  my $render_global_dispatch_replacement = q!function DvM(a){var $p,$z;$p=0;if(Gt()){var $T=DI();$p=$T.l();a=$T.l();}_:while(true){switch($p){case 0:if(SD_getEnabled()){$p=1;continue _;}$p=3;continue _;case 1:$z=SD_TUFF_DvM(a);if(B()){break _;}$p=2;case 2:$z=SD_Di4(a);if(B()){break _;}return $z;case 3:$z=SD_TUFF_DvM(a);if(B()){break _;}return $z;default:Gs();}}DI().s(a,$p);}!;
+  my $render_global_dispatch_count = s/\Q$render_global_dispatch_anchor\E/$render_global_dispatch_replacement/;
+  die "expected exactly one RenderGlobal loadRenderers dispatch anchor\n"
+    unless $render_global_dispatch_count == 1;
   my $atlas_state_anchor = q!a.E$=Bx();a.KG=Cs();a.cdi=Cs();!;
   my $atlas_state_replacement = q!a.E$=Bx();a.uF=a.E$;a.KG=Cs();a.Y3=a.KG;a.cdi=Cs();a.bFf=a.cdi;!;
   my $atlas_state_count = s/\Q$atlas_state_anchor\E/$atlas_state_replacement/;
@@ -180,11 +199,11 @@ function SD_F_j(b){!;
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-c898978161bf5e0cda6e5a31bd327a66867ce76898e81cf217ed95ca74dcb42d  index.html
+be8802d257c5f4ffcdbee017eecdc476fc67455a71ab895433d83c57895ff51d  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-5ecf1f8e8f26e5bf3e3d5de5cd36d2265cb4e7efe03432b79219150fa798e656  selahmc-client-v8.3.3.js
+d2a777e9eeb0e5bb22b2a1e78f3ea44137ad149af659a2d59a390fa706e7b347  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
