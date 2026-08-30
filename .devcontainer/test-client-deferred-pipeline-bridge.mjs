@@ -142,6 +142,105 @@ assert.deepEqual(
 );
 assert.deepEqual(hostUpdateCalls, [pipeline]);
 
+const guiPrimitiveModes = [];
+const guiVertexBuffer = { kind: "gui-vertex-buffer" };
+const guiUploadBuffer = { BW: 34962 };
+const guiPipeline = {
+  bVH: {
+    a8G: 0,
+    bVJ: { kind: "vertex-array" },
+    ua: {
+      data: [
+        {
+          Dh: null,
+          V8: guiUploadBuffer,
+        },
+      ],
+    },
+  },
+  k2: -1,
+  R5: 0,
+  Zw: -1,
+};
+const guiBuilder = {
+  cX0: 7,
+  de: undefined,
+  kw: { data: new Uint8Array(64) },
+  pM: 4,
+  tc: { c3z: 8, rs: 20 },
+};
+const guiContext = {
+  B() {
+    return false;
+  },
+  Bg() {},
+  C(id) {
+    return `string-${id}`;
+  },
+  Cxp() {},
+  Cya() {
+    return guiPipeline;
+  },
+  Da() {},
+  DI() {
+    throw new Error("the GUI quad upload must not suspend");
+  },
+  DlA() {},
+  DQ4(_pipeline, primitiveMode, firstVertex, vertexCount) {
+    guiPrimitiveModes.push({ firstVertex, primitiveMode, vertexCount });
+  },
+  DtT() {
+    return guiVertexBuffer;
+  },
+  EDX() {},
+  EEW() {},
+  F5Y() {},
+  F8p() {},
+  Fj() {},
+  Fo: class RuntimeException {},
+  GFv() {},
+  GGr(buffer) {
+    return buffer;
+  },
+  GTO() {
+    return 0;
+  },
+  GVK() {},
+  Gs() {
+    throw new Error("invalid TeaVM state");
+  },
+  Gt() {
+    return false;
+  },
+  HeZ() {},
+  I(error) {
+    throw error;
+  },
+  IW(buffer) {
+    return buffer.data.length;
+  },
+  SD_HWL: null,
+  SD_HWy: null,
+  SD_HWz: { bl5: 4096, ex: 0 },
+  SD_KTU: 0,
+  SD_TUFF_DOQ(value) {
+    return value;
+  },
+  V(left, right) {
+    return Math.imul(left, right);
+  },
+  YX() {},
+};
+guiBuilder.de = guiBuilder;
+vm.createContext(guiContext);
+vm.runInContext(deferredDrawSource, guiContext);
+guiContext.SD_FQU({ de: guiBuilder });
+assert.deepEqual(
+  guiPrimitiveModes,
+  [{ firstVertex: 0, primitiveMode: 7, vertexCount: 4 }],
+  "the deferred GUI upload submits the primitive mode initialized by Tuff's BufferBuilder",
+);
+
 const providerCalls = [];
 const provider = { kind: "deferred-gbuffer-compiler" };
 const extensionContext = {
