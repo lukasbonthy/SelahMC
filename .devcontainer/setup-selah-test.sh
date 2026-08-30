@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=198d84a0"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=a5fd071f"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -79,6 +79,11 @@ perl -0pi -e '
   my $missing_view_entity_count = s/\Q$missing_view_entity_anchor\E/$missing_view_entity_replacement/g;
   die "expected exactly two EntityRenderer missing-view-entity anchors\n"
     unless $missing_view_entity_count == 2;
+  my $missing_view_entity_post_set_anchor = q!case 6:DII(b,f);if(B()){break _;}b=a.bD;g=b.hl;b=b.O;!;
+  my $missing_view_entity_post_set_replacement = q!case 6:DII(b,f);if(B()){break _;}b=a.bD;g=b.hl;if(g===null)return;b=b.O;!;
+  my $missing_view_entity_post_set_count = s/\Q$missing_view_entity_post_set_anchor\E/$missing_view_entity_post_set_replacement/;
+  die "expected exactly one EntityRenderer post-set view-entity anchor\n"
+    unless $missing_view_entity_post_set_count == 1;
   my $render_global_state_anchor = q!a.bQI=0.0;a.csC=0;a.dkr=null;a.cUY=null;}!;
   my $render_global_state_replacement = q!a.bQI=0.0;a.csC=0;a.dkr=null;a.cUY=null;a.r4=null;a.PL=0;a.czM=0;a.cOB=0;a.bp8=0;}!;
   my $render_global_state_count = s/\Q$render_global_state_anchor\E/$render_global_state_replacement/;
@@ -235,11 +240,11 @@ function SD_F_j(b){!;
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-5b125496c173d538fbff555b364f4080770b17beb6f4e48993f1c1008889eaa5  index.html
+2bc66c195c21f5cadfe7b542dcb4fc4404b5d8df8334c2cda07f963c603c9276  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-198d84a01899f9a5c8ad54e45fec239ebdb57ff8a0a19dca7e76f5c0ffb8a1b4  selahmc-client-v8.3.3.js
+a5fd071f11ea988600c843c421823c255b9c2b9ff12830e78eae1674d41a2256  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
