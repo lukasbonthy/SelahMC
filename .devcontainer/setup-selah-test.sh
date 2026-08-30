@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=d2a777e9"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=c55260fd"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -56,6 +56,11 @@ perl -0pi -e '
 ' "${stage}/selah-optifine-bridge-v8.3.3.js"
 
 perl -0pi -e '
+  my $js_functor_anchor = q~function Dp(b,c){var name='"'"'jso$functor$'"'"'+c;if(!b[name]){var fn=function(){return b[c].apply(b,arguments);};b[name]=function(){return fn;};}return b[name]();}~;
+  my $js_functor_replacement = q~function Dp(b,c){var name='"'"'jso$functor$'"'"'+c;if(!b[name]){var fn=function(){if(c==="onProgress"&&$rt_nativeThread()===null){var args=arguments;$rt_startThread(function(){return b[c].apply(b,args);});return;}return b[c].apply(b,arguments);};b[name]=function(){return fn;};}return b[name]();}~;
+  my $js_functor_count = s/\Q$js_functor_anchor\E/$js_functor_replacement/;
+  die "expected exactly one JavaScript functor bridge anchor\n"
+    unless $js_functor_count == 1;
   my $anchor_count = () = /AJd\(c\);c\.cMt=b;/g;
   die "expected exactly one deferred first-use texture anchor\n"
     unless $anchor_count == 1;
@@ -199,11 +204,11 @@ function SD_F_j(b){!;
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-be8802d257c5f4ffcdbee017eecdc476fc67455a71ab895433d83c57895ff51d  index.html
+7ee671b9eb20372ba2fe547be61de2e85adbffc677210052c0233048daa95cca  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-d2a777e9eeb0e5bb22b2a1e78f3ea44137ad149af659a2d59a390fa706e7b347  selahmc-client-v8.3.3.js
+c55260fd43c65cafb4d702cc63625d53533ab67cb57368fa999abd3cc269b1c3  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
