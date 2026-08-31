@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=4b4869d2"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=3e049e7d"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -67,6 +67,21 @@ perl -0pi -e '
   die "expected exactly one Minecraft runTick join-lifecycle anchor\n"
     unless $world_join_tick_count == 1;
   s/\Q$world_join_tick_anchor\E/$world_join_tick_replacement/;
+  my $void_fog_player_anchor = q~if(!a.cn){b=a.O;if(b!==null){i=a.t.b;$p=48;continue _;}}~;
+  my $void_fog_player_replacement = q~if(!a.cn){b=a.O;if(b!==null){if(a.t===null){$p=43;continue _;}i=a.t.b;$p=48;continue _;}}~;
+  my $void_fog_player_count = s/\Q$void_fog_player_anchor\E/$void_fog_player_replacement/g;
+  die "expected exactly seventeen Minecraft void-fog player anchors\n"
+    unless $void_fog_player_count == 17;
+  my $void_fog_y_resume_anchor = q~case 48:$z=G0W(i);if(B()){break _;}e=$z;i=a.t.h;$p=49;~;
+  my $void_fog_y_resume_replacement = q~case 48:$z=G0W(i);if(B()){break _;}e=$z;if(a.t===null){$p=43;continue _;}i=a.t.h;$p=49;~;
+  my $void_fog_y_resume_count = s/\Q$void_fog_y_resume_anchor\E/$void_fog_y_resume_replacement/;
+  die "expected exactly one Minecraft void-fog Y-coordinate resume anchor\n"
+    unless $void_fog_y_resume_count == 1;
+  my $void_fog_z_resume_anchor = q~case 49:$z=G0W(i);if(B()){break _;}k=$z;i=a.t.d;$p=50;~;
+  my $void_fog_z_resume_replacement = q~case 49:$z=G0W(i);if(B()){break _;}k=$z;if(a.t===null){$p=43;continue _;}i=a.t.d;$p=50;~;
+  my $void_fog_z_resume_count = s/\Q$void_fog_z_resume_anchor\E/$void_fog_z_resume_replacement/;
+  die "expected exactly one Minecraft void-fog Z-coordinate resume anchor\n"
+    unless $void_fog_z_resume_count == 1;
   my $world_client_player_anchor = q!b=a.Bi;d=b.w.r3;f=b.t.b/16.0;!;
   my $world_client_player_replacement = q!b=a.Bi;if(b.t===null)return;d=b.w.r3;f=b.t.b/16.0;!;
   my $world_client_player_count = s/\Q$world_client_player_anchor\E/$world_client_player_replacement/;
@@ -261,11 +276,11 @@ function SD_F_j(b){!;
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-b43c6aa94c9f3969b1cf71c617932d7b4bab889c685b5fc03fc104ac06d8b6e3  index.html
+ff91aafff35dad4a07906040a727c4874cfd8e6f966f6861d867ce895c3e284a  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-4b4869d2941a0edc7a268d1454219902e7f35eb30442560d8ae0c45bc782617c  selahmc-client-v8.3.3.js
+3e049e7d66ac0e8cc452c421d1e952ea7b0ee7a101124c1469815e6b07fb5be8  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
@@ -275,7 +290,7 @@ for client_test in "${repo_root}"/.devcontainer/test-client-*.mjs; do
   node "${client_test}" "${stage}/selahmc-client-v8.3.3.js"
 done
 
-touch "${stage}/.ready-v8.3.3-4b4869d2"
+touch "${stage}/.ready-v8.3.3-3e049e7d"
 rm -rf -- "${destination}"
 mv -- "${stage}" "${destination}"
 stage=""
