@@ -41,6 +41,7 @@ function extractFunction(name) {
 }
 
 const minecraftRunTickSource = extractFunction("CYD");
+const worldClientTickSource = extractFunction("Fd1");
 const minecraft = {
   O: { kind: "multiplayer-world" },
   t: null,
@@ -114,5 +115,141 @@ assert.throws(
   "once the local player exists, runTick resumes the original renderer path",
 );
 assert.equal(rendererUpdates, 1, "the ready world reaches EntityRenderer.updateRenderer");
+
+const worldClient = {
+  a8U: { kind: "visible-chunks" },
+  Bi: {
+    t: null,
+    w: { r3: 8 },
+  },
+};
+const worldTickResumeOrder = [
+  "$p", "r", "q", "p", "o", "n", "m", "l", "k", "j", "i", "h",
+  "g", "f", "e", "d", "c", "b", "a",
+];
+const worldTickResumedLocals = {
+  $p: 5,
+  a: worldClient,
+  b: worldClient.a8U,
+};
+let worldTickResumeIndex = 0;
+let visibleChunkClears = 0;
+const worldTickResumeStack = {
+  l() {
+    const name = worldTickResumeOrder[worldTickResumeIndex++];
+    return Object.hasOwn(worldTickResumedLocals, name)
+      ? worldTickResumedLocals[name]
+      : null;
+  },
+  s() {
+    throw new Error("the missing-player world tick must not suspend");
+  },
+};
+const worldTickContext = {
+  B() {
+    return false;
+  },
+  DI() {
+    return worldTickResumeStack;
+  },
+  Gs() {
+    throw new Error("invalid TeaVM state");
+  },
+  Gt() {
+    return true;
+  },
+  Hn(chunks) {
+    assert.equal(chunks, worldClient.a8U);
+    ++visibleChunkClears;
+  },
+};
+
+vm.createContext(worldTickContext);
+vm.runInContext(worldClientTickSource, worldTickContext);
+
+assert.doesNotThrow(
+  () => worldTickContext.Fd1(worldClient),
+  "WorldClient.tick waits when its Minecraft instance has not published a player",
+);
+assert.equal(
+  visibleChunkClears,
+  1,
+  "the world tick reaches the visible-chunk refresh boundary before waiting",
+);
+
+const activeChunk = { kind: "active-chunk" };
+const previousActiveChunks = { kind: "previous-active-chunks" };
+const lateWorldClient = {
+  Bi: { t: null },
+  V7: previousActiveChunks,
+  Y: { kind: "random" },
+};
+const lateWorldTickResumeOrder = [
+  "$p", "r", "q", "p", "o", "n", "m", "l", "k", "j", "i", "h",
+  "g", "f", "e", "d", "c", "b", "a",
+];
+const lateWorldTickResumedLocals = {
+  $p: 30,
+  a: lateWorldClient,
+  c: { kind: "sky-light" },
+  d: 0,
+  l: activeChunk,
+  m: { kind: "block-pos" },
+};
+let lateWorldTickResumeIndex = 0;
+let playerDistanceLookups = 0;
+const nextChunkBoundary = new Error("next-chunk-boundary");
+const unexpectedDistanceLookup = new Error("missing-player-distance-lookup");
+const lateWorldTickResumeStack = {
+  l() {
+    const name = lateWorldTickResumeOrder[lateWorldTickResumeIndex++];
+    return Object.hasOwn(lateWorldTickResumedLocals, name)
+      ? lateWorldTickResumedLocals[name]
+      : null;
+  },
+  s() {
+    throw new Error("the disappearing-player world tick must not suspend");
+  },
+};
+const lateWorldTickContext = {
+  B() {
+    return false;
+  },
+  DI() {
+    return lateWorldTickResumeStack;
+  },
+  EjC() {
+    ++playerDistanceLookups;
+    throw unexpectedDistanceLookup;
+  },
+  FY0() {
+    return 0;
+  },
+  GGA(chunks, chunk) {
+    assert.equal(chunks, previousActiveChunks);
+    assert.equal(chunk, activeChunk);
+    throw nextChunkBoundary;
+  },
+  Gs() {
+    throw new Error("invalid TeaVM state");
+  },
+  Gt() {
+    return true;
+  },
+};
+
+vm.createContext(lateWorldTickContext);
+vm.runInContext(worldClientTickSource, lateWorldTickContext);
+
+assert.throws(
+  () => lateWorldTickContext.Fd1(lateWorldClient),
+  (error) => error === nextChunkBoundary,
+  "WorldClient.tick skips ambient distance work if the player disappears mid-tick",
+);
+assert.equal(
+  playerDistanceLookups,
+  0,
+  "a missing player is never passed to the ambient distance calculation",
+);
 
 console.log("multiplayer world ticks wait for the local player lifecycle");
