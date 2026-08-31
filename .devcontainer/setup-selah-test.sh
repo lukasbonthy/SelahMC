@@ -63,9 +63,10 @@ perl -0pi -e '
     unless $js_functor_count == 1;
   my $world_join_tick_anchor = q~case 27:GOh(a);if(B()){break _;}b=a.O;if(b!==null){~;
   my $world_join_tick_replacement = q~case 27:GOh(a);if(B()){break _;}b=a.O;if(b!==null&&a.t===null){$p=43;continue _;}if(b!==null){~;
-  my $world_join_tick_count = s/\Q$world_join_tick_anchor\E/$world_join_tick_replacement/;
+  my $world_join_tick_count = () = /\Q$world_join_tick_anchor\E/g;
   die "expected exactly one Minecraft runTick join-lifecycle anchor\n"
     unless $world_join_tick_count == 1;
+  s/\Q$world_join_tick_anchor\E/$world_join_tick_replacement/;
   my $anchor_count = () = /AJd\(c\);c\.cMt=b;/g;
   die "expected exactly one deferred first-use texture anchor\n"
     unless $anchor_count == 1;
@@ -242,6 +243,11 @@ function SD_F_j(b){!;
   $_ .= "\n" unless /\n\z/;
 ' "${stage}/selahmc-client-v8.3.3.js"
 
+echo "Running SelahMC client regression suite"
+for client_test in "${repo_root}"/.devcontainer/test-client-*.mjs; do
+  node "${client_test}" "${stage}/selahmc-client-v8.3.3.js"
+done
+
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
@@ -253,7 +259,7 @@ ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnost
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
-touch "${stage}/.ready-v8.3.3"
+touch "${stage}/.ready-v8.3.3-28ed5476"
 rm -rf -- "${destination}"
 mv -- "${stage}" "${destination}"
 stage=""
