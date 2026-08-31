@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=32622ce8"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=4b4869d2"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -72,6 +72,11 @@ perl -0pi -e '
   my $world_client_player_count = s/\Q$world_client_player_anchor\E/$world_client_player_replacement/;
   die "expected exactly one WorldClient player-lifecycle anchor\n"
     unless $world_client_player_count == 1;
+  my $world_client_coordinate_anchor = q!case 6:$z=G0W(f);if(B()){break _;}g=$z;f=a.Bi.t.d/16.0;!;
+  my $world_client_coordinate_replacement = q!case 6:$z=G0W(f);if(B()){break _;}g=$z;if(a.Bi.t===null)return;f=a.Bi.t.d/16.0;!;
+  my $world_client_coordinate_count = s/\Q$world_client_coordinate_anchor\E/$world_client_coordinate_replacement/;
+  die "expected exactly one WorldClient coordinate-lifecycle anchor\n"
+    unless $world_client_coordinate_count == 1;
   my $world_client_ambient_player_anchor = q!c=a.Bi.t;n=h+0.5;o=g+0.5;f=i+0.5;!;
   my $world_client_ambient_player_replacement = q!c=a.Bi.t;if(c===null){c=a.V7;$p=25;continue _;}n=h+0.5;o=g+0.5;f=i+0.5;!;
   my $world_client_ambient_player_count = s/\Q$world_client_ambient_player_anchor\E/$world_client_ambient_player_replacement/;
@@ -256,11 +261,11 @@ function SD_F_j(b){!;
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-48b396b5eafb439aea90f1754a3c41db811f7d70962a9ba093a51ccb181054dd  index.html
+b43c6aa94c9f3969b1cf71c617932d7b4bab889c685b5fc03fc104ac06d8b6e3  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-32622ce8c5a2b19569eee88214011cc97fa7e2442e44519181c8d45bc8a20a75  selahmc-client-v8.3.3.js
+4b4869d2941a0edc7a268d1454219902e7f35eb30442560d8ae0c45bc782617c  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
@@ -270,7 +275,7 @@ for client_test in "${repo_root}"/.devcontainer/test-client-*.mjs; do
   node "${client_test}" "${stage}/selahmc-client-v8.3.3.js"
 done
 
-touch "${stage}/.ready-v8.3.3-32622ce8"
+touch "${stage}/.ready-v8.3.3-4b4869d2"
 rm -rf -- "${destination}"
 mv -- "${stage}" "${destination}"
 stage=""
