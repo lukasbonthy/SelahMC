@@ -1,6 +1,11 @@
 {
   "name": "SelahMC v8.3.3 iPad Test",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    }
+  },
   "postCreateCommand": "bash .devcontainer/setup-selah-test.sh",
   "postStartCommand": "bash .devcontainer/start-selah-test.sh",
   "forwardPorts": [8000],
