@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=a5fd071f"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=28ed5476"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -61,6 +61,11 @@ perl -0pi -e '
   my $js_functor_count = s/\Q$js_functor_anchor\E/$js_functor_replacement/;
   die "expected exactly one JavaScript functor bridge anchor\n"
     unless $js_functor_count == 1;
+  my $world_join_tick_anchor = q~case 27:GOh(a);if(B()){break _;}b=a.O;if(b!==null){~;
+  my $world_join_tick_replacement = q~case 27:GOh(a);if(B()){break _;}b=a.O;if(b!==null&&a.t===null){$p=43;continue _;}if(b!==null){~;
+  my $world_join_tick_count = s/\Q$world_join_tick_anchor\E/$world_join_tick_replacement/;
+  die "expected exactly one Minecraft runTick join-lifecycle anchor\n"
+    unless $world_join_tick_count == 1;
   my $anchor_count = () = /AJd\(c\);c\.cMt=b;/g;
   die "expected exactly one deferred first-use texture anchor\n"
     unless $anchor_count == 1;
@@ -240,11 +245,11 @@ function SD_F_j(b){!;
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-2bc66c195c21f5cadfe7b542dcb4fc4404b5d8df8334c2cda07f963c603c9276  index.html
+d56cd9116d87402e08c19a815a3d77d074aa0200b525a626a771dc1903a9a73b  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-a5fd071f11ea988600c843c421823c255b9c2b9ff12830e78eae1674d41a2256  selahmc-client-v8.3.3.js
+28ed5476b4ccc238c93320bd6d4802270790443ca804ba7a5d4516ce62cb2641  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
