@@ -35,7 +35,7 @@ perl -0pi -e '
   my $diagnostic_count = s/\Q$loader\E/$diagnostics/;
   die "expected exactly one Selah loader script tag\n" unless $diagnostic_count == 1;
   my $client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js"></script>};
-  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=28ed5476"></script>};
+  my $versioned_client = qq{\t\t<script type="text/javascript" src="selahmc-client-v8.3.3.js?v=32622ce8"></script>};
   my $client_count = s/\Q$client\E/$versioned_client/;
   die "expected exactly one Selah client script tag\n" unless $client_count == 1;
 ' "${stage}/index.html"
@@ -67,6 +67,16 @@ perl -0pi -e '
   die "expected exactly one Minecraft runTick join-lifecycle anchor\n"
     unless $world_join_tick_count == 1;
   s/\Q$world_join_tick_anchor\E/$world_join_tick_replacement/;
+  my $world_client_player_anchor = q!b=a.Bi;d=b.w.r3;f=b.t.b/16.0;!;
+  my $world_client_player_replacement = q!b=a.Bi;if(b.t===null)return;d=b.w.r3;f=b.t.b/16.0;!;
+  my $world_client_player_count = s/\Q$world_client_player_anchor\E/$world_client_player_replacement/;
+  die "expected exactly one WorldClient player-lifecycle anchor\n"
+    unless $world_client_player_count == 1;
+  my $world_client_ambient_player_anchor = q!c=a.Bi.t;n=h+0.5;o=g+0.5;f=i+0.5;!;
+  my $world_client_ambient_player_replacement = q!c=a.Bi.t;if(c===null){c=a.V7;$p=25;continue _;}n=h+0.5;o=g+0.5;f=i+0.5;!;
+  my $world_client_ambient_player_count = s/\Q$world_client_ambient_player_anchor\E/$world_client_ambient_player_replacement/;
+  die "expected exactly one WorldClient ambient-player anchor\n"
+    unless $world_client_ambient_player_count == 1;
   my $anchor_count = () = /AJd\(c\);c\.cMt=b;/g;
   die "expected exactly one deferred first-use texture anchor\n"
     unless $anchor_count == 1;
@@ -246,11 +256,11 @@ function SD_F_j(b){!;
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
-d56cd9116d87402e08c19a815a3d77d074aa0200b525a626a771dc1903a9a73b  index.html
+48b396b5eafb439aea90f1754a3c41db811f7d70962a9ba093a51ccb181054dd  index.html
 ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnostics.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
 9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
-28ed5476b4ccc238c93320bd6d4802270790443ca804ba7a5d4516ce62cb2641  selahmc-client-v8.3.3.js
+32622ce8c5a2b19569eee88214011cc97fa7e2442e44519181c8d45bc8a20a75  selahmc-client-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
@@ -260,7 +270,7 @@ for client_test in "${repo_root}"/.devcontainer/test-client-*.mjs; do
   node "${client_test}" "${stage}/selahmc-client-v8.3.3.js"
 done
 
-touch "${stage}/.ready-v8.3.3-28ed5476"
+touch "${stage}/.ready-v8.3.3-32622ce8"
 rm -rf -- "${destination}"
 mv -- "${stage}" "${destination}"
 stage=""
