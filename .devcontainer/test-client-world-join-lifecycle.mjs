@@ -116,6 +116,101 @@ assert.throws(
 );
 assert.equal(rendererUpdates, 1, "the ready world reaches EntityRenderer.updateRenderer");
 
+function assertMinecraftResumeWaitsForPlayer({
+  state,
+  locals = {},
+  expectedWorldTicks = 0,
+  expectedCoordinateProjections = 0,
+  message,
+}) {
+  const resumedMinecraft = {
+    O: { kind: "multiplayer-world" },
+    t: null,
+    cn: false,
+    bGu: 0,
+  };
+  const resumeLocals = {
+    $p: state,
+    a: resumedMinecraft,
+    b: resumedMinecraft.O,
+    ...locals,
+  };
+  let index = 0;
+  let worldTicks = 0;
+  let coordinateProjections = 0;
+  let epilogueTicks = 0;
+  const stack = {
+    l() {
+      const name = resumeOrder[index++];
+      return Object.hasOwn(resumeLocals, name) ? resumeLocals[name] : null;
+    },
+    s() {
+      throw new Error("the missing-player runTick path must not suspend");
+    },
+  };
+  const resumeContext = {
+    B() {
+      return false;
+    },
+    DI() {
+      return stack;
+    },
+    Fd1(world) {
+      assert.equal(world, resumedMinecraft.O);
+      ++worldTicks;
+    },
+    FFy() {
+      ++epilogueTicks;
+      return 5678;
+    },
+    G0W(value) {
+      ++coordinateProjections;
+      return Math.floor(value);
+    },
+    Gs() {
+      throw new Error("invalid TeaVM state");
+    },
+    Gt() {
+      return true;
+    },
+  };
+
+  vm.createContext(resumeContext);
+  vm.runInContext(minecraftRunTickSource, resumeContext);
+
+  assert.doesNotThrow(() => resumeContext.CYD(resumedMinecraft), message);
+  assert.equal(worldTicks, expectedWorldTicks, `${message}: expected world ticks`);
+  assert.equal(
+    coordinateProjections,
+    expectedCoordinateProjections,
+    `${message}: expected coordinate projections`,
+  );
+  assert.equal(epilogueTicks, 1, `${message}: reaches the normal epilogue`);
+  assert.equal(
+    resumedMinecraft.bGu,
+    5678,
+    `${message}: publishes the normal timing state`,
+  );
+}
+
+assertMinecraftResumeWaitsForPlayer({
+  state: 57,
+  expectedWorldTicks: 1,
+  message: "runTick waits if the player disappears while WorldClient.tick resumes",
+});
+assertMinecraftResumeWaitsForPlayer({
+  state: 48,
+  locals: { i: 12.75 },
+  expectedCoordinateProjections: 1,
+  message: "runTick waits if the player disappears after projecting player X",
+});
+assertMinecraftResumeWaitsForPlayer({
+  state: 49,
+  locals: { i: 64.25 },
+  expectedCoordinateProjections: 1,
+  message: "runTick waits if the player disappears after projecting player Y",
+});
+
 const worldClient = {
   a8U: { kind: "visible-chunks" },
   Bi: {
