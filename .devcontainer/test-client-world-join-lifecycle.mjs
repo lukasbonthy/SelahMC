@@ -57,6 +57,7 @@ const resumedLocals = { $p: 27, a: minecraft };
 let resumeIndex = 0;
 let rendererUpdates = 0;
 let finalTicks = 0;
+const rendererBoundary = new Error("renderer-update-boundary");
 const resumeStack = {
   l() {
     const name = resumeOrder[resumeIndex++];
@@ -77,7 +78,7 @@ const context = {
   Dmj(renderer) {
     ++rendererUpdates;
     assert.equal(renderer, minecraft.e7);
-    throw new Error("EntityRenderer must not update before the local player exists");
+    throw rendererBoundary;
   },
   FFy() {
     ++finalTicks;
@@ -104,5 +105,14 @@ assert.doesNotThrow(
 assert.equal(rendererUpdates, 0, "the renderer is skipped during the join gap");
 assert.equal(finalTicks, 1, "the frame still reaches the normal runTick epilogue");
 assert.equal(minecraft.bGu, 1234, "the runTick epilogue publishes its timing state");
+
+resumeIndex = 0;
+minecraft.t = { kind: "local-player" };
+assert.throws(
+  () => context.CYD(minecraft),
+  (error) => error === rendererBoundary,
+  "once the local player exists, runTick resumes the original renderer path",
+);
+assert.equal(rendererUpdates, 1, "the ready world reaches EntityRenderer.updateRenderer");
 
 console.log("multiplayer world ticks wait for the local player lifecycle");
