@@ -177,6 +177,63 @@ assert.equal(
   "the world tick reaches the visible-chunk refresh boundary before waiting",
 );
 
+const coordinateWorldClient = {
+  Bi: { t: null },
+};
+const coordinateResumeOrder = [
+  "$p", "r", "q", "p", "o", "n", "m", "l", "k", "j", "i", "h",
+  "g", "f", "e", "d", "c", "b", "a",
+];
+const coordinateResumedLocals = {
+  $p: 6,
+  a: coordinateWorldClient,
+  f: 0,
+};
+let coordinateResumeIndex = 0;
+let coordinateProjections = 0;
+const coordinateResumeStack = {
+  l() {
+    const name = coordinateResumeOrder[coordinateResumeIndex++];
+    return Object.hasOwn(coordinateResumedLocals, name)
+      ? coordinateResumedLocals[name]
+      : null;
+  },
+  s() {
+    throw new Error("the disappearing-player coordinate refresh must not suspend");
+  },
+};
+const coordinateWorldTickContext = {
+  B() {
+    return false;
+  },
+  DI() {
+    return coordinateResumeStack;
+  },
+  G0W(value) {
+    ++coordinateProjections;
+    return Math.floor(value);
+  },
+  Gs() {
+    throw new Error("invalid TeaVM state");
+  },
+  Gt() {
+    return true;
+  },
+};
+
+vm.createContext(coordinateWorldTickContext);
+vm.runInContext(worldClientTickSource, coordinateWorldTickContext);
+
+assert.doesNotThrow(
+  () => coordinateWorldTickContext.Fd1(coordinateWorldClient),
+  "WorldClient.tick waits if the player disappears between chunk-coordinate projections",
+);
+assert.equal(
+  coordinateProjections,
+  1,
+  "the test reaches the TeaVM resume point between the X and Z player coordinates",
+);
+
 const activeChunk = { kind: "active-chunk" };
 const previousActiveChunks = { kind: "previous-active-chunks" };
 const lateWorldClient = {
