@@ -243,11 +243,6 @@ function SD_F_j(b){!;
   $_ .= "\n" unless /\n\z/;
 ' "${stage}/selahmc-client-v8.3.3.js"
 
-echo "Running SelahMC client regression suite"
-for client_test in "${repo_root}"/.devcontainer/test-client-*.mjs; do
-  node "${client_test}" "${stage}/selahmc-client-v8.3.3.js"
-done
-
 (
   cd "${stage}"
   sha256sum --check <<'SUMS'
@@ -259,6 +254,12 @@ ae643bbf264db47fafd118e7194730fa65949bf12475845001f282e28aa3c6d2  selah-diagnost
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )
+
+echo "Running SelahMC client regression suite"
+for client_test in "${repo_root}"/.devcontainer/test-client-*.mjs; do
+  node "${client_test}" "${stage}/selahmc-client-v8.3.3.js"
+done
+
 touch "${stage}/.ready-v8.3.3-28ed5476"
 rm -rf -- "${destination}"
 mv -- "${stage}" "${destination}"
