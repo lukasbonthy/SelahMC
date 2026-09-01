@@ -1,0 +1,94 @@
+name: Build SelahMC v8.3.6 portable release
+
+on:
+  push:
+    branches: ["lifecycle-barrier-v8.3.6"]
+    paths:
+      - ".github/workflows/selah-v8.3.6-release.yml"
+      - ".devcontainer/**"
+      - "lifecycle-repair/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: selah-v8.3.6-portable-release
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.0"
+          cache: false
+
+      - name: Download pinned client inputs
+        run: |
+          set -euo pipefail
+          mkdir -p recovered-live
+          curl --fail --location --retry 3 \
+            https://selahmc.me/client/selahmc-client-v8.3.3.js \
+            --output recovered-live/selahmc-client-v8.3.3.js
+          curl --fail --location --retry 3 \
+            https://selahmc.me/client/index.html \
+            --output recovered-live/index.html
+          sha256sum --check <<'SUMS'
+          6e775ed50e83a6ba976aea593e0ef70ed74b662f652f3f47f616499a85005ba4  recovered-live/selahmc-client-v8.3.3.js
+          bf37f956c331a6275ec8a5d7a6741b55aac77ffead7330efeae58e252b723cfa  recovered-live/index.html
+          SUMS
+
+      - name: Verify and package
+        working-directory: lifecycle-repair
+        run: |
+          set -euo pipefail
+          npm test
+          (cd portable/server && go test ./... && go vet ./...)
+          npm run build
+          npm run package
+          npm run package:portable
+
+      - name: Verify portable archive
+        run: |
+          set -euo pipefail
+          archive="lifecycle-repair/dist/SelahMC-v8.3.6-Portable-Windows.zip"
+          unzip -t "${archive}"
+          sha256sum "${archive}" > "${archive}.sha256"
+
+      - name: Publish portable prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="v8.3.6-portable"
+          archive="lifecycle-repair/dist/SelahMC-v8.3.6-Portable-Windows.zip"
+          checksum="${archive}.sha256"
+
+          if gh release view "${tag}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            assets="$(gh release view "${tag}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name')"
+            if ! rg --fixed-strings --line-regexp --quiet "$(basename "${archive}")" <<< "${assets}"; then
+              gh release upload "${tag}" "${archive}" --repo "${GITHUB_REPOSITORY}"
+            fi
+            if ! rg --fixed-strings --line-regexp --quiet "$(basename "${checksum}")" <<< "${assets}"; then
+              gh release upload "${tag}" "${checksum}" --repo "${GITHUB_REPOSITORY}"
+            fi
+          else
+            gh release create "${tag}" "${archive}" "${checksum}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --target "${GITHUB_SHA}" \
+              --title "SelahMC v8.3.6 Portable Windows" \
+              --notes "No-install Windows package for the verified SelahMC v8.3.6 lifecycle repair. Extract the ZIP and run START_SELAHMC.cmd." \
+              --prerelease
+          fi
