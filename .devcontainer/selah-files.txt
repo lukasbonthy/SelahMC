@@ -1,5 +1,4 @@
 favicon.png|
-index.html|
 lang/af_za.lang|
 lang/ar_sa.lang|
 lang/ast_es.lang|
@@ -117,9 +116,8 @@ selah-companion-v7.8.js|
 selah-device-modes-v7.8.js|
 selah-loader-bg-v7.8-2x.jpg|
 selah-loader-bg-v7.8.jpg|
-selah-loader-v8.3.2.js|selah-loader-v8.3.3.js
+selah-loader-v8.3.3.js|
 selah-logo-v7.8.png|
-selah-optifine-bridge-v8.3.2.js|selah-optifine-bridge-v8.3.3.js
+selah-optifine-bridge-v8.3.3.js|
 selah-resource-packs-v7.8.js|
-selahmc-assets-v8.3.2.epk|selahmc-assets-v8.3.3.epk
-selahmc-client-v8.3.2.js|selahmc-client-v8.3.3.js
+selahmc-assets-v8.3.3.epk|

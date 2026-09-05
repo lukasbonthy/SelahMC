@@ -1,0 +1,12 @@
+{
+  "name": "selahmc-lifecycle-repair",
+  "private": true,
+  "scripts": {
+    "build": "node tools/build-lifecycle-repair.mjs --input ../recovered-live/selahmc-client-v8.3.3.js --barrier src/world-lifecycle-barrier.js --output dist/work/selahmc-client-v8.3.7.js",
+    "package": "node tools/package-release.mjs",
+    "package:portable": "node tools/package-portable-release.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "verify": "npm test && npm run build && npm run package"
+  },
+  "type": "module"
+}
