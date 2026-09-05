@@ -61,12 +61,12 @@ test("release contains the versioned client, hash-pinned index, and five files",
       "SHA256SUMS",
       "index.html",
       "install.sh",
-      "selahmc-client-v8.3.6.js",
+      "selahmc-client-v8.3.7.js",
     ]);
     assert.match(
       index,
       new RegExp(
-        `selahmc-client-v8\\.3\\.6\\.js\\?v=${release.bundleSha256.slice(0, 8)}`,
+        `selahmc-client-v8\\.3\\.7\\.js\\?v=${release.bundleSha256.slice(0, 8)}`,
       ),
     );
     assert.doesNotMatch(index, /selah-diagnostics\.js/);
@@ -74,7 +74,7 @@ test("release contains the versioned client, hash-pinned index, and five files",
     assert.deepEqual(
       listing.stdout.trim().split("\n").sort(),
       files
-        .map((file) => `SelahMC-v8.3.6-Lifecycle-Barrier/${file}`)
+        .map((file) => `SelahMC-v8.3.7-Lifecycle-Transaction/${file}`)
         .sort(),
     );
   } finally {
@@ -127,11 +127,11 @@ test("installer preserves v8.3.3, creates a rollback backup, and installs atomic
     assert.match(
       installedIndex,
       new RegExp(
-        `selahmc-client-v8\\.3\\.6\\.js\\?v=${release.bundleSha256.slice(0, 8)}`,
+        `selahmc-client-v8\\.3\\.7\\.js\\?v=${release.bundleSha256.slice(0, 8)}`,
       ),
     );
     assert.equal(
-      (await stat(join(target, "selahmc-client-v8.3.6.js"))).mode & 0o777,
+      (await stat(join(target, "selahmc-client-v8.3.7.js"))).mode & 0o777,
       0o644,
     );
     assert.match(result.stdout, /Deployment complete/);
@@ -148,7 +148,7 @@ test("corrupt package fails before changing the client root", async () => {
     const corruptRelease = join(directory, "corrupt-release");
     await cp(release.releaseDirectory, corruptRelease, { recursive: true });
     await appendFile(
-      join(corruptRelease, "selahmc-client-v8.3.6.js"),
+      join(corruptRelease, "selahmc-client-v8.3.7.js"),
       "\n// corruption\n",
       "utf8",
     );
@@ -179,7 +179,7 @@ test("corrupt package fails before changing the client root", async () => {
       await readFile(join(target, "selahmc-client-v8.3.3.js"), "utf8"),
       originalClient,
     );
-    await assert.rejects(stat(join(target, "selahmc-client-v8.3.6.js")), {
+    await assert.rejects(stat(join(target, "selahmc-client-v8.3.7.js")), {
       code: "ENOENT",
     });
     await assert.rejects(readdir(backupRoot), { code: "ENOENT" });

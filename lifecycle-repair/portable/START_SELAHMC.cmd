@@ -1,6 +1,6 @@
 @echo off
 setlocal
-title SelahMC v8.3.6 Portable
+title SelahMC v8.3.7 Portable
 cd /d "%~dp0"
 
 set "SELAH_SERVER=bin\selah-portable-server-x64.exe"

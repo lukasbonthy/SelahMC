@@ -81,7 +81,231 @@ function applyLifecycleRuntimeTransforms(source, replacements) {
     });
   }
 
+  function protectContinuation(name, minecraft, gate, expectedSuspensions) {
+    code = transformGeneratedFunction(code, name, (source) => {
+      let result = replaceExact(source, ",$p,$z;", ",SD_generation,$p,$z;", 1, `${name} generation local`);
+      result = replaceExact(result, "$p=$T.l();", "$p=$T.l();SD_generation=$T.l();", 1, `${name} generation restore`);
+      result = replaceExact(result, ",$p);}", ",SD_generation,$p);}", 1, `${name} generation save`);
+      const entry = `case 0:if(!SD_worldLifecycleReady(${minecraft},"${gate}"))return;`;
+      result = replaceExact(result, entry, `${entry}SD_generation=SD_worldLifecycleGetState(${minecraft},0).generation;`, 1, `${name} generation capture`);
+      const suspension = /if\s*\(B\(\)\)\s*\{break _;\}/gu;
+      const count = [...result.matchAll(suspension)].length;
+      if (count !== expectedSuspensions) {
+        throw new Error(`${name} continuations: expected ${expectedSuspensions}, found ${count}`);
+      }
+      replacements[`${gate}Continuations`] = count;
+      // The pending child must consume its saved frames before cancellation.
+      return result.replace(suspension, (boundary) => `${boundary}if(!SD_worldLifecycleOwns(${minecraft},SD_generation)||!SD_worldLifecycleReady(${minecraft},"${gate}.resume"))return;`);
+    });
+  }
+
+  patchFunction("G6r", [
+    {
+      before: "var c,d,e,f,g,h,i,$p,$z;",
+      after: "var c,d,e,f,g,h,i,SD_generation,$p,$z;",
+      label: "transaction continuation local",
+      metric: "loadWorldTransaction",
+    },
+    {
+      before: "$p=$T.l();i=$T.l();",
+      after: "$p=$T.l();SD_generation=$T.l();i=$T.l();",
+      label: "restore transaction generation",
+      metric: "loadWorldTransaction",
+    },
+    {
+      before: "DI().s(a,b,c,d,e,f,g,h,i,$p);",
+      after: "DI().s(a,b,c,d,e,f,g,h,i,SD_generation,$p);",
+      label: "save transaction generation",
+      metric: "loadWorldTransaction",
+    },
+    {
+      before: "case 0:GN7();",
+      after: "case 0:SD_generation=SD_worldLifecycleBegin(a,b);GN7();",
+      label: "invalidate before first asynchronous operation",
+      metric: "loadWorldTransaction",
+    },
+    {
+      after:
+        "BVz(a.c9,a.t);a.hl=a.t;SD_worldLifecycleCommit(a,SD_generation);a.bGu=BA;return;",
+      before: "BVz(a.c9,a.t);a.hl=a.t;a.bGu=BA;return;",
+      label: "commit after final player and camera setup",
+      metric: "loadWorldTransaction",
+    },
+    {
+      before: "if(B()){break _;}",
+      after: "if(B()){break _;}if(!SD_worldLifecycleOwns(a,SD_generation))return 0;",
+      count: 37,
+      label: "discard superseded load after child completion",
+      metric: "loadWorldResume",
+    },
+    {
+      before: "if\n(B()){break _;}",
+      after: "if\n(B()){break _;}if(!SD_worldLifecycleOwns(a,SD_generation))return 0;",
+      label: "discard superseded load after wrapped child completion",
+      metric: "loadWorldResume",
+    },
+    {
+      before: "a.bGu=BA;return;",
+      after: "a.bGu=BA;return 1;",
+      count: 2,
+      label: "explicit load completion result",
+      metric: "loadWorldCompletion",
+    },
+  ]);
+
+  // All direct callers must propagate cancellation, including join/respawn
+  // packet handlers which immediately write player fields after loadWorld.
+  for (const name of ["GjI", "CYD", "EIu", "EXw", "CaB", "B38", "GA_", "FfJ", "EN4", "FF1", "GKt", "CZ5", "DYf"]) {
+    code = transformGeneratedFunction(code, name, (source) => {
+      const calls = [...source.matchAll(/G6r\([^;]+\);if\s*\(B\(\)\)\s*\{break _;\}/gu)];
+      if (calls.length !== 1) throw new Error(`${name} loadWorld caller: expected 1, found ${calls.length}`);
+      replacements.loadWorldCallers = (replacements.loadWorldCallers || 0) + 1;
+      return replaceExact(source, calls[0][0], `$z=${calls[0][0]}if(!$z)return;`, 1, `${name} canceled load`);
+    });
+  }
+
+  patchFunction("HjP", [
+    {
+      after:
+        'if(b!==null){$p=2;continue _;}if(!SD_worldLifecycleReady(a,"displayGuiScreen.close")){$p=2;continue _;}c=a.t;$p=3;continue _;',
+      before: "if(b!==null){$p=2;continue _;}c=a.t;$p=3;continue _;",
+      count: 2,
+      label: "null-screen health boundary",
+      metric: "displayGuiScreen",
+    },
+    {
+      before: "case 3:$z=Fff(c);if(B()){break _;}e=$z;",
+      after: 'case 3:$z=Fff(c);if(B()){break _;}if(c!==a.t||!SD_worldLifecycleReady(a,"displayGuiScreen.healthResume")){$p=2;continue _;}e=$z;',
+      label: "health continuation recheck",
+      metric: "displayGuiScreen",
+    },
+  ]);
+
+  patchFunction("DEF", [
+    {
+      after:
+        'case 1:$z=GC0();if(B()){break _;}b=$z;if(!b)return;if(a.b0===null&&!SD_worldLifecycleReady(a,"runTickMouse.gameplay")){$p=1;continue _;}',
+      before: "case 1:$z=GC0();if(B()){break _;}b=$z;if(!b)return;",
+      label: "gameplay event-loop boundary",
+      metric: "runTickMouse",
+    },
+    {
+      before: "if(b&&!Iph){e=a.t;$p=9;continue _;}",
+      after: 'if(b&&!Iph&&SD_worldLifecycleReady(a,"runTickMouse.scroll")){e=a.t;$p=9;continue _;}',
+      label: "scroll player boundary",
+      metric: "runTickMouse",
+    },
+    {
+      after:
+        'case 2:DdZ(b,d);if(B()){break _;}if(!ZN()||!SD_worldLifecycleReady(a,"runTickMouse.wheel")){$p=3;continue _;}e=a.t;',
+      before:
+        "case 2:DdZ(b,d);if(B()){break _;}if(!ZN()){$p=3;continue _;}e=a.t;",
+      label: "player wheel boundary",
+      metric: "runTickMouse",
+    },
+    {
+      after:
+        'case 8:e.oq();if(B()){break _;}SD_worldLifecycleReady(a,"runTickMouse.afterScreen");$p=1;',
+      before: "case 8:e.oq();if(B()){break _;}$p=1;",
+      label: "screen callback boundary",
+      metric: "runTickMouse",
+    },
+    ...[
+      "case 4:$z=FjD(e);if(B()){break _;}",
+      "case 9:$z=FjD(e);if(B()){break _;}",
+      "case 13:$z=HjF(e);if(B()){break _;}",
+      "case 14:$z=FR_(h,i,j);if(B()){break _;}",
+    ].map((before) => ({
+      before,
+      after: `${before}if(!SD_worldLifecycleReady(a,"runTickMouse.playerResume")){$p=3;continue _;}`,
+      label: "player continuation recheck",
+      metric: "runTickMouseResume",
+    })),
+  ]);
+
+  patchFunction("GOh", [
+    {
+      after:
+        'case 1:$z=Gfq();if(B()){break _;}b=$z;if(!b){if(!SD_worldLifecycleReady(a,"runTickKeyboard.keyBinds"))return;$p=2;continue _;}if(a.b0===null&&!SD_worldLifecycleReady(a,"runTickKeyboard.gameplay")){$p=1;continue _;}',
+      before: "case 1:$z=Gfq();if(B()){break _;}b=$z;if(!b){$p=2;continue _;}",
+      label: "gameplay event-loop boundary",
+      metric: "runTickKeyboard",
+    },
+    {
+      after:
+        'case 7:GSv(h);if(B()){break _;}if(a.b0===null&&!SD_worldLifecycleReady(a,"runTickKeyboard.afterScreen")){$p=1;continue _;}j=AHE();',
+      before: "case 7:GSv(h);if(B()){break _;}j=AHE();",
+      label: "screen callback boundary",
+      metric: "runTickKeyboard",
+    },
+  ]);
+
+  patchFunction("EcM", [
+    {
+      after:
+        'case 0:if(!SD_worldLifecycleReady(a,"processKeyBinds"))return;b=a.w.cEf;',
+      before: "case 0:b=a.w.cEf;",
+      label: "entry gate",
+      metric: "processKeyBinds",
+    },
+  ]);
+
+  patchFunction("CtF", [
+    {
+      after:
+        'case 0:if(!SD_worldLifecycleReady(a,"clickMouse"))return;if(a.xi>0)return;',
+      before: "case 0:if(a.xi>0)return;",
+      label: "entry gate",
+      metric: "clickMouse",
+    },
+  ]);
+
+  patchFunction("GLY", [
+    {
+      after:
+        'case 0:if(!SD_worldLifecycleReady(a,"rightClickMouse"))return;$p=1;',
+      before: "case 0:$p=1;",
+      label: "entry gate",
+      metric: "rightClickMouse",
+    },
+  ]);
+
+  patchFunction("GVy", [
+    {
+      after:
+        'case 0:if(!SD_worldLifecycleReady(a,"middleClickMouse"))return;b=a.fz;',
+      before: "case 0:b=a.fz;",
+      label: "entry gate",
+      metric: "middleClickMouse",
+    },
+  ]);
+
+  patchFunction("FP1", [
+    {
+      after:
+        'case 0:if(!SD_worldLifecycleReady(a,"sendClickBlockToController"))return;if(!b)a.xi=0;',
+      before: "case 0:if(!b)a.xi=0;",
+      label: "entry gate",
+      metric: "sendClickBlockToController",
+    },
+  ]);
+
+  for (const [name, gate, count] of [
+    ["EcM", "processKeyBinds", 50],
+    ["CtF", "clickMouse", 16],
+    ["GLY", "rightClickMouse", 25],
+    ["GVy", "middleClickMouse", 61],
+    ["FP1", "sendClickBlockToController", 10],
+  ]) protectContinuation(name, "a", gate, count);
+
   patchFunction("CYD", [
+    {
+      before: "if(b!==null&&!b.Bp){",
+      after: 'if(b!==null&&!b.Bp){if(a.O!==null&&!SD_worldLifecycleReady(a,"runTick.afterModalScreen")){$p=43;continue _;}',
+      count: 13,
+      label: "world boundary after modal screen events",
+      metric: "runTickModalScreen",
+    },
     {
       after:
         'if(!a.cn&&a.O!==null&&SD_worldLifecycleReady(a,"runTick.controller")){b=a.c9;$p=9;continue _;}',
@@ -107,6 +331,7 @@ function applyLifecycleRuntimeTransforms(source, replacements) {
       metric: "playerControllerUpdate",
     },
   ]);
+  protectContinuation("DQl", "a.fB", "playerController.updateController", 47);
 
   patchFunction("GU9", [
     {
@@ -176,7 +401,7 @@ function applyLifecycleRuntimeTransforms(source, replacements) {
     },
     {
       after:
-        'case 1:if(!SD_worldLifecycleReady(a.bD,"updateRenderer.resume"))return;$z=Dcf(b);if(B()){break _;}if(!SD_worldLifecycleReady(a.bD,"updateRenderer.resume"))return;d=$z;c=a.a08;',
+        'case 1:$z=Dcf(b);if(B()){break _;}if(!SD_worldLifecycleReady(a.bD,"updateRenderer.resume"))return;d=$z;c=a.a08;',
       before: "case 1:$z=Dcf(b);if(B()){break _;}d=$z;c=a.a08;",
       label: "camera resume gate",
       metric: "updateRenderer",
@@ -190,6 +415,7 @@ function applyLifecycleRuntimeTransforms(source, replacements) {
       metric: "updateRenderer",
     },
   ]);
+  protectContinuation("Dmj", "a.bD", "updateRenderer", 17);
 
   patchFunction("FSs", [
     {

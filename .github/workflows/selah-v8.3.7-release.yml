@@ -1,10 +1,10 @@
-name: Build SelahMC v8.3.6 portable release
+name: Build SelahMC v8.3.7 portable release
 
 on:
   push:
     branches: ["lifecycle-barrier-v8.3.6"]
     paths:
-      - ".github/workflows/selah-v8.3.6-release.yml"
+      - ".github/workflows/selah-v8.3.7-release.yml"
       - ".devcontainer/**"
       - "lifecycle-repair/**"
   workflow_dispatch:
@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: selah-v8.3.6-portable-release
+  group: selah-v8.3.7-portable-release
   cancel-in-progress: false
 
 jobs:
@@ -60,35 +60,42 @@ jobs:
           npm run package
           npm run package:portable
 
-      - name: Verify portable archive
+      - name: Verify release archives
         run: |
           set -euo pipefail
-          archive="lifecycle-repair/dist/SelahMC-v8.3.6-Portable-Windows.zip"
-          unzip -t "${archive}"
-          sha256sum "${archive}" > "${archive}.sha256"
+          cd lifecycle-repair/dist
+          for archive in SelahMC-v8.3.7-Portable-Windows.zip SelahMC-v8.3.7-Lifecycle-Transaction.zip; do
+            unzip -t "${archive}"
+            sha256sum "${archive}" > "${archive}.sha256"
+          done
 
       - name: Publish portable prerelease
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag="v8.3.6-portable"
-          archive="lifecycle-repair/dist/SelahMC-v8.3.6-Portable-Windows.zip"
-          checksum="${archive}.sha256"
+          tag="v8.3.7-portable"
+          cd lifecycle-repair/dist
+          artifacts=(SelahMC-v8.3.7-Portable-Windows.zip SelahMC-v8.3.7-Portable-Windows.zip.sha256 SelahMC-v8.3.7-Lifecycle-Transaction.zip SelahMC-v8.3.7-Lifecycle-Transaction.zip.sha256)
 
           if gh release view "${tag}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            # A rerun must not silently serve bytes from another repair commit.
+            tagged_commit="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${tag}" --jq '.object.sha')"
+            if [[ "${tagged_commit}" != "${GITHUB_SHA}" ]]; then
+              echo "Release tag points at another commit; use a new release version." >&2
+              exit 1
+            fi
             assets="$(gh release view "${tag}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name')"
-            if ! rg --fixed-strings --line-regexp --quiet "$(basename "${archive}")" <<< "${assets}"; then
-              gh release upload "${tag}" "${archive}" --repo "${GITHUB_REPOSITORY}"
-            fi
-            if ! rg --fixed-strings --line-regexp --quiet "$(basename "${checksum}")" <<< "${assets}"; then
-              gh release upload "${tag}" "${checksum}" --repo "${GITHUB_REPOSITORY}"
-            fi
+            for artifact in "${artifacts[@]}"; do
+              if ! rg --fixed-strings --line-regexp --quiet "${artifact}" <<< "${assets}"; then
+                gh release upload "${tag}" "${artifact}" --repo "${GITHUB_REPOSITORY}"
+              fi
+            done
           else
-            gh release create "${tag}" "${archive}" "${checksum}" \
+            gh release create "${tag}" "${artifacts[@]}" \
               --repo "${GITHUB_REPOSITORY}" \
               --target "${GITHUB_SHA}" \
-              --title "SelahMC v8.3.6 Portable Windows" \
-              --notes "No-install Windows package for the verified SelahMC v8.3.6 lifecycle repair. Extract the ZIP and run START_SELAHMC.cmd." \
+              --title "SelahMC v8.3.7 Lifecycle Repair" \
+              --notes-file ../packaging/release-notes.md \
               --prerelease
           fi

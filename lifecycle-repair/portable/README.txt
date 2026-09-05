@@ -1,15 +1,15 @@
-SelahMC v8.3.6 Portable for Windows
+SelahMC v8.3.7 Portable for Windows
 ===================================
 
 This is the no-install school-PC build. It includes the complete SelahMC
-v8.3.6 client, its 1.12.2 asset pack, plugins, launcher images, and portable
+v8.3.7 client, its 1.12.2 asset pack, plugins, launcher images, and portable
 localhost servers for Windows x64 and Windows ARM64.
 
 How to start
 ------------
 
 1. Extract the ENTIRE ZIP. Do not run it from inside the ZIP preview.
-2. Open the extracted SelahMC-v8.3.6-Portable-Windows folder.
+2. Open the extracted SelahMC-v8.3.7-Portable-Windows folder.
 3. Double-click START_SELAHMC.cmd.
 4. Keep the SelahMC command window open while playing.
 

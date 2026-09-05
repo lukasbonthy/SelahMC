@@ -95,7 +95,7 @@ test("portable release contains a complete no-install Windows client", async () 
     assert.match(
       index,
       new RegExp(
-        `selahmc-client-v8\\.3\\.6\\.js\\?v=${release.bundleSha256.slice(0, 8)}`,
+        `selahmc-client-v8\\.3\\.7\\.js\\?v=${release.bundleSha256.slice(0, 8)}`,
       ),
     );
     assert.doesNotMatch(index, /selah-diagnostics\.js|\/__selah_diag/);

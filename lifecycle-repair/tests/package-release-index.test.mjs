@@ -18,7 +18,7 @@ test("release rewrites one pinned Selah client script from a newer live index", 
     ),
     [
       "<html><body>",
-      '<script src="selahmc-client-v8.3.6.js?v=5bd2a230"></script>',
+      '<script src="selahmc-client-v8.3.7.js?v=5bd2a230"></script>',
       "</body></html>",
     ].join("\n"),
   );

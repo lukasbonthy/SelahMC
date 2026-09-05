@@ -17,7 +17,7 @@ import { replaceExact, transformBundle } from "./build-lifecycle-repair.mjs";
 const execFileAsync = promisify(execFile);
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
-export const RELEASE_NAME = "SelahMC-v8.3.6-Lifecycle-Barrier";
+export const RELEASE_NAME = "SelahMC-v8.3.7-Lifecycle-Transaction";
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -34,7 +34,7 @@ export function rewriteClientScript(index, bundleSha256) {
   }
   return index.replace(
     clientScriptPattern,
-    `src="selahmc-client-v8.3.6.js?v=${bundleSha256.slice(0, 8)}"`,
+    `src="selahmc-client-v8.3.7.js?v=${bundleSha256.slice(0, 8)}"`,
   );
 }
 
@@ -91,7 +91,7 @@ export async function buildRelease(options = {}) {
     "README.txt": readmeSource,
     "index.html": patchedIndex,
     "install.sh": installerSource,
-    "selahmc-client-v8.3.6.js": transformed.code,
+    "selahmc-client-v8.3.7.js": transformed.code,
   };
   for (const [name, contents] of Object.entries(files)) {
     await writeFile(join(releaseDirectory, name), contents, "utf8");
@@ -109,7 +109,7 @@ export async function buildRelease(options = {}) {
 
   await execFileAsync(
     process.execPath,
-    ["--check", join(releaseDirectory, "selahmc-client-v8.3.6.js")],
+    ["--check", join(releaseDirectory, "selahmc-client-v8.3.7.js")],
     { encoding: "utf8" },
   );
 
@@ -119,7 +119,7 @@ export async function buildRelease(options = {}) {
     "SHA256SUMS",
     "index.html",
     "install.sh",
-    "selahmc-client-v8.3.6.js",
+    "selahmc-client-v8.3.7.js",
   ];
   for (const name of releaseFiles) {
     await utimes(join(releaseDirectory, name), stableTime, stableTime);

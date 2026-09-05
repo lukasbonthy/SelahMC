@@ -23,7 +23,7 @@ import { buildRelease } from "./package-release.mjs";
 const execFileAsync = promisify(execFile);
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
-export const PORTABLE_RELEASE_NAME = "SelahMC-v8.3.6-Portable-Windows";
+export const PORTABLE_RELEASE_NAME = "SelahMC-v8.3.7-Portable-Windows";
 
 export const PORTABLE_ASSET_PATHS = Object.freeze([
   "favicon.png",
@@ -316,8 +316,8 @@ export async function buildPortableRelease(options = {}) {
       join(releaseDirectory, "client", "index.html"),
     ),
     copyFile(
-      join(coreRelease.releaseDirectory, "selahmc-client-v8.3.6.js"),
-      join(releaseDirectory, "client", "selahmc-client-v8.3.6.js"),
+      join(coreRelease.releaseDirectory, "selahmc-client-v8.3.7.js"),
+      join(releaseDirectory, "client", "selahmc-client-v8.3.7.js"),
     ),
     copyWindowsText(
       join(projectRoot, "portable", "START_SELAHMC.cmd"),

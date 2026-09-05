@@ -5,7 +5,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 site_root="${repo_root}/.selah-test"
 diagnostics_log="${repo_root}/.selah-diagnostics.log"
 
-if [[ ! -f "${site_root}/.ready-v8.3.6-5bd2a230" ]]; then
+if [[ ! -f "${site_root}/.ready-v8.3.7-8d7e33e1" ]]; then
   bash "${repo_root}/.devcontainer/setup-selah-test.sh"
 fi
 
@@ -17,7 +17,7 @@ fi
 
 for _ in $(seq 1 30); do
   if curl --fail --silent --max-time 2 http://127.0.0.1:8000/ >/dev/null 2>&1; then
-    echo "SelahMC v8.3.6 test server: http://localhost:8000"
+    echo "SelahMC v8.3.7 test server: http://localhost:8000"
     exit 0
   fi
   sleep 1
