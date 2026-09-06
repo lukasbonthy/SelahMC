@@ -23,7 +23,7 @@ import { buildRelease } from "./package-release.mjs";
 const execFileAsync = promisify(execFile);
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
-export const PORTABLE_RELEASE_NAME = "SelahMC-v8.3.8-Portable-Windows";
+export const PORTABLE_RELEASE_NAME_PREFIX = "SelahMC-v8.3.8";
 
 export const PORTABLE_ASSET_PATHS = Object.freeze([
   "favicon.png",
@@ -283,8 +283,6 @@ export async function buildPortableRelease(options = {}) {
     options.assetRoot || join(outputRoot, "portable-cache/assets"),
   );
   const goBinary = options.goBinary || process.env.SELAH_GO_BIN || "go";
-  const releaseDirectory = childPath(outputRoot, PORTABLE_RELEASE_NAME);
-  const zipPath = childPath(outputRoot, `${PORTABLE_RELEASE_NAME}.zip`);
   const coreOutputRoot = childPath(outputRoot, ".portable-core");
 
   for (const assetPath of PORTABLE_ASSET_PATHS) {
@@ -298,6 +296,10 @@ export async function buildPortableRelease(options = {}) {
     barrierPath: options.barrierPath,
     outputRoot: coreOutputRoot,
   });
+  const releaseName =
+    `${PORTABLE_RELEASE_NAME_PREFIX}-${coreRelease.bundleSha256.slice(0, 8)}-Portable-Windows`;
+  const releaseDirectory = childPath(outputRoot, releaseName);
+  const zipPath = childPath(outputRoot, `${releaseName}.zip`);
 
   await mkdir(outputRoot, { recursive: true });
   await rm(releaseDirectory, { force: true, recursive: true });
@@ -366,7 +368,7 @@ export async function buildPortableRelease(options = {}) {
 
   await createDeterministicZip({
     releaseDirectory,
-    releaseName: PORTABLE_RELEASE_NAME,
+    releaseName,
     zipPath,
   });
   const zipBytes = await readFile(zipPath);
@@ -374,7 +376,7 @@ export async function buildPortableRelease(options = {}) {
   return {
     bundleSha256: coreRelease.bundleSha256,
     releaseDirectory,
-    releaseName: PORTABLE_RELEASE_NAME,
+    releaseName,
     zipPath,
     zipSha256: sha256(zipBytes),
   };

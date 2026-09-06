@@ -18,7 +18,6 @@ import { promisify } from "node:util";
 import {
   DEFAULT_ASSET_MANIFEST,
   PORTABLE_ASSET_PATHS,
-  PORTABLE_RELEASE_NAME,
   buildPortableRelease,
   createDeterministicZip,
   fetchPortableAssets,
@@ -91,7 +90,13 @@ test("portable release contains a complete no-install Windows client", async () 
       encoding: "utf8",
     });
 
-    assert.equal(release.releaseName, PORTABLE_RELEASE_NAME);
+    const expectedReleaseName =
+      `SelahMC-v8.3.8-${release.bundleSha256.slice(0, 8)}-Portable-Windows`;
+    assert.equal(release.releaseName, expectedReleaseName);
+    assert.equal(
+      release.zipPath,
+      join(directory, "output", `${expectedReleaseName}.zip`),
+    );
     assert.match(
       index,
       new RegExp(
@@ -144,7 +149,7 @@ test("portable release contains a complete no-install Windows client", async () 
     });
     assert.deepEqual(
       listing.stdout.trim().split("\n").sort(),
-      files.map((file) => `${PORTABLE_RELEASE_NAME}/${file}`).sort(),
+      files.map((file) => `${expectedReleaseName}/${file}`).sort(),
     );
   } finally {
     await rm(directory, { force: true, recursive: true });
