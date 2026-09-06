@@ -1,0 +1,191 @@
+(function(global) {
+  "use strict";
+
+  var armed = false;
+  var history = [];
+  var maxHistory = 40;
+  var maxPayload = 12000;
+  var loadStage = null;
+  var loadStageAt = 0;
+  var loadStageGeneration = 0;
+  var animationFrameReported = false;
+  var atlasReported = false;
+
+  function describe(value) {
+    try {
+      if(value && typeof value.stack === "string") {
+        return value.stack;
+      }
+      if(typeof value === "string") {
+        return value;
+      }
+      if(value && typeof value === "object") {
+        return JSON.stringify(value);
+      }
+      return String(value);
+    }catch(ignore) {
+      return "[unprintable value]";
+    }
+  }
+
+  function clean(value) {
+    return describe(value).replace(/[\r\n]+/g, "\\n").slice(0, maxPayload);
+  }
+
+  function post(kind, values, urgent) {
+    var parts = [new Date().toISOString(), kind];
+    for(var i = 0; i < values.length; ++i) {
+      parts.push(clean(values[i]));
+    }
+    var body = parts.join(" | ").slice(0, maxPayload);
+    if(urgent && global.navigator &&
+        typeof global.navigator.sendBeacon === "function") {
+      try {
+        if(global.navigator.sendBeacon("/__selah_diag", body)) {
+          return;
+        }
+      }catch(ignore) {}
+    }
+    try {
+      global.fetch("/__selah_diag", {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=UTF-8" },
+        body: body,
+        keepalive: true
+      }).catch(function() {});
+    }catch(ignore) {}
+  }
+
+  function reportLoadStage(progress, label) {
+    if(typeof progress !== "number" || progress !== progress) {
+      return;
+    }
+    progress = Math.max(0, Math.min(100, progress));
+    if(loadStage !== null && progress <= loadStage) {
+      return;
+    }
+
+    loadStage = progress;
+    loadStageAt = Date.now();
+    loadStageGeneration += 1;
+    var generation = loadStageGeneration;
+    var cleanLabel = label == null ? "" : String(label);
+    post("loader.stage", [{ progress: progress, label: cleanLabel }]);
+
+    if(progress < 100 && typeof global.setTimeout === "function") {
+      global.setTimeout(function() {
+        if(generation !== loadStageGeneration || loadStage !== progress) {
+          return;
+        }
+        post("loader.stall", [{
+          elapsedMs: Math.max(0, Date.now() - loadStageAt),
+          label: cleanLabel,
+          progress: progress
+        }]);
+      }, 20000);
+    }
+  }
+
+  function listCount(value) {
+    return value && typeof value.c === "number" ? value.c : null;
+  }
+
+  function spriteName(sprite) {
+    try {
+      return sprite && sprite.BL != null ? String(sprite.BL) : null;
+    }catch(ignore) {
+      return "[unprintable sprite name]";
+    }
+  }
+
+  global.__selahAnimationFrameError = function(message, state) {
+    if(animationFrameReported) {
+      return;
+    }
+    animationFrameReported = true;
+    post("animation-frame.error", [message || "unknown animation-frame error", state], true);
+  };
+
+  global.__selahAtlasCrash = function(message, state) {
+    if(atlasReported) {
+      return;
+    }
+    atlasReported = true;
+    post("atlas.crash", [message || "unknown texture-atlas error", state], true);
+  };
+
+  global.__selahMipmapCrash = function(sprite, mipmapLevel, error) {
+    var pbrFrameCounts = null;
+    try {
+      if(sprite && sprite.ja && sprite.ja.data) {
+        pbrFrameCounts = [];
+        for(var i = 0; i < 3; ++i) {
+          pbrFrameCounts.push(listCount(sprite.ja.data[i]));
+        }
+      }
+    }catch(ignore) {}
+
+    post("mipmap.crash", [{
+      className: sprite && sprite.constructor && sprite.constructor.name || null,
+      height: sprite && typeof sprite.nP === "number" ? sprite.nP : null,
+      mipmapLevel: mipmapLevel,
+      name: spriteName(sprite),
+      pbrFrameCounts: pbrFrameCounts,
+      standardFrameCount: listCount(sprite && sprite.pf),
+      width: sprite && typeof sprite.mK === "number" ? sprite.mK : null
+    }, error], true);
+  };
+
+  function remember(method, args) {
+    var values = [];
+    for(var i = 0; i < args.length; ++i) {
+      values.push(describe(args[i]));
+    }
+    var line = method + " | " + values.join(" ");
+    history.push(clean(line));
+    if(history.length > maxHistory) {
+      history.shift();
+    }
+
+    if(line.indexOf("resources from EPKs") !== -1 ||
+        line.indexOf("Reloading ResourceManager") !== -1) {
+      if(!armed) {
+        armed = true;
+        post("console.context", [history.join(" || ")]);
+      }
+    }
+    if(armed || method === "warn" || method === "error") {
+      post("console." + method, values);
+    }
+  }
+
+  ["log", "info", "warn", "error", "debug"].forEach(function(method) {
+    var original = global.console && global.console[method];
+    if(typeof original !== "function") {
+      return;
+    }
+    global.console[method] = function() {
+      remember(method, arguments);
+      return original.apply(global.console, arguments);
+    };
+  });
+
+  global.addEventListener("error", function(event) {
+    post("window.error", [
+      event.message || "unknown error",
+      (event.filename || "unknown") + ":" + (event.lineno || 0) + ":" + (event.colno || 0),
+      event.error || ""
+    ]);
+  });
+
+  global.addEventListener("unhandledrejection", function(event) {
+    post("unhandledrejection", [event.reason || "unknown rejection"]);
+  });
+
+  post("session.start", [
+    global.navigator && global.navigator.userAgent || "unknown user agent",
+    global.location && global.location.href || "unknown location"
+  ]);
+  global.__selahReportLoadStage = reportLoadStage;
+  reportLoadStage(4, "Starting SelahMC");
+})(window);
