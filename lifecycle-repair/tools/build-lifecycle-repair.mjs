@@ -467,6 +467,17 @@ function applyLifecycleRuntimeTransforms(source, replacements) {
     },
   ]);
 
+  // Font rendering can ask for the last direct render while a display list is
+  // being compiled. renderBuffer() intentionally clears that replay handle in
+  // this mode, so renderAgain() must skip the replay instead of constructing
+  // the upstream "same vertices twice" exception.
+  patchFunction("Cxq", [{
+    before: "b=IvZ;if(b===null){b=new Fo;Bg(b,C(1416));I(b);}b=b.b2V.Dh;",
+    after: "b=IvZ;if(b===null){if(IvL)return;b=new Fo;Bg(b,C(1416));I(b);}b=b.b2V.Dh;",
+    label: "display-list replay guard",
+    metric: "fontDisplayListReplaySafety",
+  }]);
+
   patchFunction("HbC", [
     {
       after:

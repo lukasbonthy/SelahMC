@@ -1088,6 +1088,29 @@ test("camera-and-render validates the current screen before virtual drawing", ()
   );
 });
 
+test("font replay skips the missing direct render while compiling a display list", async (t) => {
+  const common = {
+    Fj: () => undefined,
+    IvZ: null,
+    Fo: class {},
+    Bg: () => undefined,
+    C: () => 0,
+    I: () => {
+      throw new Error("renderAgain should not throw during display-list compilation");
+    },
+  };
+
+  await t.test("display-list compilation is a no-op", () => {
+    const { fn } = evaluateGenerated("Cxq", { ...common, IvL: 1 });
+    assert.doesNotThrow(() => fn());
+  });
+
+  await t.test("normal rendering keeps the upstream invariant", () => {
+    const { fn } = evaluateGenerated("Cxq", { ...common, IvL: 0 });
+    assert.throws(() => fn(), /renderAgain should not throw/);
+  });
+});
+
 test("real bundle records all centralized and resume-point gates exactly once", () => {
   const required = [
     "runTick",
@@ -1117,6 +1140,7 @@ test("real bundle records all centralized and resume-point gates exactly once", 
   assert.equal(transformed.replacements.deferredPotionCapture, 1);
   assert.equal(transformed.replacements.tuffPotionCapture, 1);
   assert.equal(transformed.replacements.screenRenderSafety, 1);
+  assert.equal(transformed.replacements.fontDisplayListReplaySafety, 1);
   assert.equal(transformed.replacements.loadWorldTransaction, 5);
   assert.equal(transformed.replacements.loadWorldResume, 38);
   assert.equal(transformed.replacements.loadWorldCompletion, 2);
