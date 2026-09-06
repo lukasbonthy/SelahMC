@@ -1,0 +1,56 @@
+import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
+import { readFile, stat } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import test from "node:test";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
+const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
+const siteRoot = join(repoRoot, ".selah-test");
+
+function sha256(bytes) {
+  return createHash("sha256").update(bytes).digest("hex");
+}
+
+test("Codespaces setup publishes the verified v8.3.8 lifecycle client", async () => {
+  const childEnvironment = { ...process.env };
+  delete childEnvironment.NODE_TEST_CONTEXT;
+  await execFileAsync("bash", [join(repoRoot, ".devcontainer/setup-selah-test.sh")], {
+    cwd: repoRoot,
+    encoding: "utf8",
+    env: {
+      ...childEnvironment,
+      SELAH_SOURCE_URL:
+        process.env.SELAH_TEST_SOURCE_URL || "https://selahmc.me/client",
+    },
+    maxBuffer: 4 * 1024 * 1024,
+    timeout: 300_000,
+  });
+
+  const clientPath = join(siteRoot, "selahmc-client-v8.3.8.js");
+  const index = await readFile(join(siteRoot, "index.html"), "utf8");
+  const client = await readFile(clientPath);
+
+  assert.equal(
+    sha256(client),
+    "bb6060cd64737bdd8c4f1ee899886b35723257dc28e814637e38453d2f7899dc",
+  );
+  assert.match(index, /selahmc-client-v8\.3\.8\.js\?v=bb6060cd/);
+  assert.doesNotMatch(index, /selah-diagnostics\.js|selahmc-client-v8\.3\.3\.js/);
+  assert.equal(
+    (await stat(join(siteRoot, ".ready-v8.3.8-bb6060cd"))).isFile(),
+    true,
+  );
+  await assert.rejects(stat(join(siteRoot, "selahmc-client-v8.3.3.js")), {
+    code: "ENOENT",
+  });
+
+  await execFileAsync(process.execPath, ["--check", clientPath], {
+    cwd: repoRoot,
+    encoding: "utf8",
+    timeout: 60_000,
+  });
+});
