@@ -1124,3 +1124,35 @@ test("real bundle records all centralized and resume-point gates exactly once", 
   assert.equal(transformed.replacements.deferredRenderChunkBaseFields, 2);
   assert.equal(transformed.replacements.integratedServerSettingsGuards, 3);
 });
+
+// Regression: the local-player fast path must not prevent remote entity lookup.
+test("entity lookup works before the local player exists", () => {
+  const remote = { cw: 42 };
+  const world = { Bi: { t: null } };
+  const { fn } = evaluateGenerated("F8d", {
+    BaF: (actualWorld, id) => {
+      assert.equal(actualWorld, world);
+      return id === 42 ? remote : null;
+    },
+  });
+  assert.equal(fn(world, 42), remote);
+  assert.equal(fn(world, 99), null);
+  const player = { cw: 1 };
+  world.Bi.t = player;
+  assert.equal(fn(world, 1), player);
+  assert.equal(fn(world, 42), remote);
+});
+
+test("sky mesh cleanup clears each deleted resource and is repeatable", () => {
+  const mesh = { bng: {}, cd7: {}, bdO: {}, bc$: 7 };
+  const deleted = new Set();
+  const remove = resource => {
+    assert.ok(!deleted.has(resource), "must not delete a resource twice");
+    deleted.add(resource);
+  };
+  const { fn } = evaluateGenerated("SD_F8R", { Hdn: remove, GLI: remove, Fmj: remove });
+  fn(mesh);
+  assert.deepEqual(mesh, { bng: null, cd7: null, bdO: null, bc$: -1 });
+  fn(mesh);
+  assert.equal(deleted.size, 4);
+});

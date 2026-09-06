@@ -1,6 +1,6 @@
 @echo off
 setlocal
-title SelahMC v8.3.7 Portable
+title SelahMC v8.3.8 Portable
 cd /d "%~dp0"
 
 set "SELAH_SERVER=bin\selah-portable-server-x64.exe"
@@ -16,7 +16,7 @@ if not exist "%SELAH_SERVER%" (
 "%SELAH_SERVER%" --root "%~dp0client" --port 3001 --open=true
 if errorlevel 1 (
   echo.
-  echo SelahMC could not start. Close any older SelahMC portable window and try again.
+  echo SelahMC could not start. See the error above. Ports 3001 through 3010 were checked.
   pause
   exit /b 1
 )

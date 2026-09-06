@@ -1,15 +1,15 @@
-SelahMC v8.3.7 Portable for Windows
+SelahMC v8.3.8 Portable for Windows
 ===================================
 
 This is the no-install school-PC build. It includes the complete SelahMC
-v8.3.7 client, its 1.12.2 asset pack, plugins, launcher images, and portable
+v8.3.8 client, its 1.12.2 asset pack, plugins, launcher images, and portable
 localhost servers for Windows x64 and Windows ARM64.
 
 How to start
 ------------
 
 1. Extract the ENTIRE ZIP. Do not run it from inside the ZIP preview.
-2. Open the extracted SelahMC-v8.3.7-Portable-Windows folder.
+2. Open the extracted SelahMC-v8.3.8-Portable-Windows folder.
 3. Double-click START_SELAHMC.cmd.
 4. Keep the SelahMC command window open while playing.
 
@@ -29,3 +29,7 @@ If it does not start
   does not alter or bypass school security controls.
 
 SHA256SUMS.txt contains a SHA-256 checksum for every packaged file.
+
+The launcher tries ports 3001-3010 and opens the port it successfully binds.
+A different port has separate browser storage; reopen the original port to access
+worlds saved there. No browser storage or saved worlds are deleted.

@@ -1,12 +1,13 @@
-Repairs the reported resource-pack confirmation crash and the related join-time null-player failures in the pinned SelahMC client.
+SelahMC v8.3.8 repair prerelease
 
-- World loading now begins and commits an explicit transaction, preserves its generation across TeaVM suspensions, and rejects superseded loads.
-- Closing the resource-pack prompt avoids reading health from a missing player. Mouse, scroll, keyboard, and modal-screen paths keep processing input while unsafe world work waits.
-- Readiness checks no longer cancel an unfinished join or permanently freeze a previously committed world when a field is temporarily unavailable.
-- Existing controller, fog, sky, lightmap, deferred renderer, and integrated-server repairs are retained.
+Changes from v8.3.7:
+- WorldClient entity lookup handles an absent local player and still looks up remote entities normally. Existing unknown-entity packet handling is preserved.
+- Sky mesh cleanup clears the correct index-buffer and vertex-array fields, preventing repeated deletion and retaining invalid handles.
+- The singleplayer worker explicitly uses the packaged client URL and cache hash.
+- Portable launcher binds the first available localhost port from 3001 through 3010, without terminating another process. A custom --port starts the same bounded search there.
 
-For Windows, extract **SelahMC-v8.3.7-Portable-Windows.zip** completely and run **START_SELAHMC.cmd**. Close the older portable command window first if it is using port 3001.
+The compatible loader and EPK remain hash-pinned v8.3.3 assets. Their version numbers do not imply a worker version mismatch.
 
-For the VPS, use **SelahMC-v8.3.7-Lifecycle-Transaction.zip** and its included README/install script. The installer verifies checksums and backs up the existing client before switching the entry page.
+Extract the Windows ZIP fully, then run START_SELAHMC.cmd. Keep the prior package for rollback. Browser world storage is separate per port; use the original port to access existing worlds.
 
-The GitHub build runs generated-runtime regressions, saved-continuation tests, package/installer tests, Go tests and vet, JavaScript syntax checks, and ZIP integrity checks. This remains a prerelease: the development cloud browser could not reach the local test server, so a live server join and resource-pack download are not yet verified. No claim is made that every unrelated client or server bug is resolved.
+These changes address reproduced code defects. Full gameplay, resource-pack reload, and the entire reported WebGL error sequence have not been validated in a live browser. This is a prerelease, not a claim that every reported error is resolved.

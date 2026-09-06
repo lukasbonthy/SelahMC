@@ -15,12 +15,14 @@ function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-test("Codespaces setup publishes the verified v8.3.7 lifecycle client", async () => {
+test("Codespaces setup publishes the verified v8.3.8 lifecycle client", async () => {
+  const childEnvironment = { ...process.env };
+  delete childEnvironment.NODE_TEST_CONTEXT;
   await execFileAsync("bash", [join(repoRoot, ".devcontainer/setup-selah-test.sh")], {
     cwd: repoRoot,
     encoding: "utf8",
     env: {
-      ...process.env,
+      ...childEnvironment,
       SELAH_SOURCE_URL:
         process.env.SELAH_TEST_SOURCE_URL || "https://selahmc.me/client",
     },
@@ -28,18 +30,18 @@ test("Codespaces setup publishes the verified v8.3.7 lifecycle client", async ()
     timeout: 300_000,
   });
 
-  const clientPath = join(siteRoot, "selahmc-client-v8.3.7.js");
+  const clientPath = join(siteRoot, "selahmc-client-v8.3.8.js");
   const index = await readFile(join(siteRoot, "index.html"), "utf8");
   const client = await readFile(clientPath);
 
   assert.equal(
     sha256(client),
-    "8d7e33e1f2ee1c2cc229e0d82160c0a4bbc7708a47e2f2c9bbaa1b20a916f584",
+    "bb6060cd64737bdd8c4f1ee899886b35723257dc28e814637e38453d2f7899dc",
   );
-  assert.match(index, /selahmc-client-v8\.3\.7\.js\?v=8d7e33e1/);
+  assert.match(index, /selahmc-client-v8\.3\.8\.js\?v=bb6060cd/);
   assert.doesNotMatch(index, /selah-diagnostics\.js|selahmc-client-v8\.3\.3\.js/);
   assert.equal(
-    (await stat(join(siteRoot, ".ready-v8.3.7-8d7e33e1"))).isFile(),
+    (await stat(join(siteRoot, ".ready-v8.3.8-bb6060cd"))).isFile(),
     true,
   );
   await assert.rejects(stat(join(siteRoot, "selahmc-client-v8.3.3.js")), {

@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -82,6 +83,27 @@ func openBrowser(targetURL string) error {
 	return exec.Command(name, arguments...).Start()
 }
 
+// Bind the socket while selecting the port, avoiding a probe/bind race.
+// Retry address-in-use only; permissions and other failures need their own error.
+func listenPortable(firstPort, attempts int) (net.Listener, error) {
+	if firstPort < 1 || firstPort > 65535 || attempts < 1 {
+		return nil, fmt.Errorf("invalid port range: %d (%d attempts)", firstPort, attempts)
+	}
+	lastPort := firstPort + min(attempts, 65536-firstPort) - 1
+	var lastError error
+	for port := firstPort; port <= lastPort; port++ {
+		listener, err := net.Listen("tcp4", fmt.Sprintf("127.0.0.1:%d", port))
+		if err == nil {
+			return listener, nil
+		}
+		if !errors.Is(err, syscall.EADDRINUSE) {
+			return nil, fmt.Errorf("bind localhost port %d: %w", port, err)
+		}
+		lastError = err
+	}
+	return nil, fmt.Errorf("localhost ports %d-%d are occupied: %w", firstPort, lastPort, lastError)
+}
+
 func run() error {
 	root := flag.String("root", "client", "directory containing the SelahMC client")
 	port := flag.Int("port", 3001, "localhost TCP port")
@@ -99,15 +121,15 @@ func run() error {
 		return fmt.Errorf("client index is missing: %w", err)
 	}
 
-	address := fmt.Sprintf("127.0.0.1:%d", *port)
-	listener, err := net.Listen("tcp4", address)
+	listener, err := listenPortable(*port, 10)
 	if err != nil {
-		return fmt.Errorf("start localhost server on %s: %w", address, err)
+		return fmt.Errorf("start localhost server: %w", err)
 	}
 	defer listener.Close()
+	address := listener.Addr().String()
 
-	targetURL := fmt.Sprintf("http://%s/?portable=v8.3.7", address)
-	fmt.Println("SelahMC v8.3.7 Portable is running.")
+	targetURL := fmt.Sprintf("http://%s/?portable=v8.3.8", address)
+	fmt.Println("SelahMC v8.3.8 Portable is running.")
 	fmt.Println("Open:", targetURL)
 	fmt.Println("Keep this window open while playing. Close it to stop SelahMC.")
 	if *open {

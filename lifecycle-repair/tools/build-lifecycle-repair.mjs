@@ -99,6 +99,25 @@ function applyLifecycleRuntimeTransforms(source, replacements) {
     });
   }
 
+  // getEntityByID's fast path reads the local player, not the entity map.
+  // Preserve the normal map lookup while singleplayer is still creating that player.
+  patchFunction("F8d", [{
+    before: "c=a.Bi.t;if(b==c.cw)return c;",
+    after: "c=a.Bi.t;if(c!==null&&b==c.cw)return c;",
+    label: "nullable local-player fast path", metric: "entityLookup",
+  }]);
+
+  // The port cleared bng three times, retaining a deleted index buffer and VAO.
+  patchFunction("SD_F8R", [{
+    before: "case 2:Hdn(b);if(B()){break _;}a.bng=null;",
+    after: "case 2:Hdn(b);if(B()){break _;}a.cd7=null;",
+    label: "clear deleted index buffer", metric: "skyMeshCleanup",
+  }, {
+    before: "case 3:GLI(b);if(B()){break _;}a.bng=null;",
+    after: "case 3:GLI(b);if(B()){break _;}a.bdO=null;",
+    label: "clear deleted vertex array", metric: "skyMeshCleanup",
+  }]);
+
   patchFunction("G6r", [
     {
       before: "var c,d,e,f,g,h,i,$p,$z;",

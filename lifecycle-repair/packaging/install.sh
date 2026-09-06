@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 TARGET_DIR="${SELAH_CLIENT_DIR:-/srv/selahmc/client}"
 BACKUP_ROOT="${SELAH_BACKUP_DIR:-/home/ubuntu/selahmc-client-backups}"
-CLIENT_FILE="selahmc-client-v8.3.7.js"
+CLIENT_FILE="selahmc-client-v8.3.8.js"
 
 cd "$SCRIPT_DIR"
 
@@ -34,7 +34,9 @@ for current_file in \
 	"$TARGET_DIR/selahmc-client-v8.3.3.js" \
 	"$TARGET_DIR/selahmc-client-v8.3.4.js" \
 	"$TARGET_DIR/selahmc-client-v8.3.5.js" \
-	"$TARGET_DIR/selahmc-client-v8.3.7.js"; do
+	"$TARGET_DIR/selahmc-client-v8.3.6.js" \
+	"$TARGET_DIR/selahmc-client-v8.3.7.js" \
+	"$TARGET_DIR/selahmc-client-v8.3.8.js"; do
 	if [[ -f "$current_file" ]]; then
 		cp -p "$current_file" "$BACKUP_DIR/"
 	fi
@@ -60,7 +62,7 @@ if [[ -z "$expected_client_hash" || "$actual_client_hash" != "$expected_client_h
 	exit 1
 fi
 
-if ! grep -Fq "selahmc-client-v8.3.7.js?v=${expected_client_hash:0:8}" "$TARGET_DIR/index.html"; then
+if ! grep -Fq "selahmc-client-v8.3.8.js?v=${expected_client_hash:0:8}" "$TARGET_DIR/index.html"; then
 	echo "Installed index does not reference the verified client hash" >&2
 	exit 1
 fi

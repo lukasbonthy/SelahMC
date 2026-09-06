@@ -17,7 +17,7 @@ import { replaceExact, transformBundle } from "./build-lifecycle-repair.mjs";
 const execFileAsync = promisify(execFile);
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
-export const RELEASE_NAME = "SelahMC-v8.3.7-Lifecycle-Transaction";
+export const RELEASE_NAME = "SelahMC-v8.3.8-Lifecycle-Transaction";
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -32,10 +32,13 @@ export function rewriteClientScript(index, bundleSha256) {
       `index client script: expected 1, found ${matches.length}`,
     );
   }
-  return index.replace(
-    clientScriptPattern,
-    `src="selahmc-client-v8.3.7.js?v=${bundleSha256.slice(0, 8)}"`,
-  );
+  const clientURL = `selahmc-client-v8.3.8.js?v=${bundleSha256.slice(0, 8)}`;
+  const rewritten = index.replace(clientScriptPattern, `src="${clientURL}"`);
+  // Cni uses this supported option before attempting stack-based source guessing.
+  const tagStart = rewritten.lastIndexOf("<script", rewritten.indexOf(`src="${clientURL}"`));
+  if (tagStart < 0) throw new Error("client script tag is missing");
+  const initializer = `<script>window.eaglercraftXClientScriptURL=new URL(${JSON.stringify(clientURL)},document.baseURI).href;</script>\n`;
+  return rewritten.slice(0, tagStart) + initializer + rewritten.slice(tagStart);
 }
 
 function assertChildPath(parent, child) {
@@ -91,7 +94,7 @@ export async function buildRelease(options = {}) {
     "README.txt": readmeSource,
     "index.html": patchedIndex,
     "install.sh": installerSource,
-    "selahmc-client-v8.3.7.js": transformed.code,
+    "selahmc-client-v8.3.8.js": transformed.code,
   };
   for (const [name, contents] of Object.entries(files)) {
     await writeFile(join(releaseDirectory, name), contents, "utf8");
@@ -109,7 +112,7 @@ export async function buildRelease(options = {}) {
 
   await execFileAsync(
     process.execPath,
-    ["--check", join(releaseDirectory, "selahmc-client-v8.3.7.js")],
+    ["--check", join(releaseDirectory, "selahmc-client-v8.3.8.js")],
     { encoding: "utf8" },
   );
 
@@ -119,7 +122,7 @@ export async function buildRelease(options = {}) {
     "SHA256SUMS",
     "index.html",
     "install.sh",
-    "selahmc-client-v8.3.7.js",
+    "selahmc-client-v8.3.8.js",
   ];
   for (const name of releaseFiles) {
     await utimes(join(releaseDirectory, name), stableTime, stableTime);

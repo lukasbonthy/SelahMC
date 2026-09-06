@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -124,5 +125,54 @@ func TestStaticHandlerRejectsTraversalAndWrites(t *testing.T) {
 	handler.ServeHTTP(writeResult, writeRequest)
 	if writeResult.Code != http.StatusMethodNotAllowed {
 		t.Fatalf("POST status = %d, want 405", writeResult.Code)
+	}
+}
+
+func TestPortableListenerSkipsOccupiedPort(t *testing.T) {
+	occupied, err := net.Listen("tcp4", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer occupied.Close()
+	port := occupied.Addr().(*net.TCPAddr).Port
+	if port > 65525 {
+		t.Skip("ephemeral port too near upper bound")
+	}
+	listener, err := listenPortable(port, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer listener.Close()
+	address := listener.Addr().(*net.TCPAddr)
+	if address.Port <= port || address.Port >= port+10 || !address.IP.IsLoopback() {
+		t.Fatalf("unexpected fallback address: %v", address)
+	}
+}
+
+func TestPortableListenerReportsOccupiedRange(t *testing.T) {
+	occupied, err := net.Listen("tcp4", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer occupied.Close()
+	listener, err := listenPortable(occupied.Addr().(*net.TCPAddr).Port, 1)
+	if listener != nil {
+		listener.Close()
+		t.Fatal("occupied port unexpectedly available")
+	}
+	if err == nil {
+		t.Fatal("expected useful bind failure")
+	}
+}
+
+func TestPortableListenerRejectsInvalidRange(t *testing.T) {
+	for _, pair := range [][2]int{{0, 10}, {65536, 1}, {3001, 0}} {
+		listener, err := listenPortable(pair[0], pair[1])
+		if listener != nil {
+			listener.Close()
+		}
+		if err == nil {
+			t.Fatalf("accepted invalid range %v", pair)
+		}
 	}
 }
