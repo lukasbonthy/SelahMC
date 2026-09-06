@@ -458,6 +458,13 @@ function applyLifecycleRuntimeTransforms(source, replacements) {
       label: "render resume gate",
       metric: "cameraAndRender",
     },
+    {
+      after:
+        'case 25:b:{try{if(w===null||typeof w.c$!=="function"){if(k.b0===w)k.b0=null;return;}w.c$(i,m,b);',
+      before: "case 25:b:{try{w.c$(i,m,b);",
+      label: "invalid current-screen guard",
+      metric: "screenRenderSafety",
+    },
   ]);
 
   patchFunction("HbC", [

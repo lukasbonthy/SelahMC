@@ -1079,6 +1079,15 @@ test("integrated-server block hooks avoid client settings when Minecraft is abse
   });
 });
 
+test("camera-and-render validates the current screen before virtual drawing", () => {
+  const cameraAndRender = extractGeneratedFunction(transformed.code, "FSs");
+
+  assert.match(
+    cameraAndRender,
+    /if\(w===null\|\|typeof w\.c\$!=="function"\)\{if\(k\.b0===w\)k\.b0=null;return;\}w\.c\$\(i,m,b\);/,
+  );
+});
+
 test("real bundle records all centralized and resume-point gates exactly once", () => {
   const required = [
     "runTick",
@@ -1107,6 +1116,7 @@ test("real bundle records all centralized and resume-point gates exactly once", 
   assert.equal(transformed.replacements.tuffPotionNullGuard, 1);
   assert.equal(transformed.replacements.deferredPotionCapture, 1);
   assert.equal(transformed.replacements.tuffPotionCapture, 1);
+  assert.equal(transformed.replacements.screenRenderSafety, 1);
   assert.equal(transformed.replacements.loadWorldTransaction, 5);
   assert.equal(transformed.replacements.loadWorldResume, 38);
   assert.equal(transformed.replacements.loadWorldCompletion, 2);
