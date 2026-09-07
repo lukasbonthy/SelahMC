@@ -4,7 +4,7 @@ import vm from "node:vm";
 import test from "node:test";
 
 const loaderPath = new URL(
-  "../dist/portable-cache/assets/selah-loader-v8.3.3.js",
+  "../assets/selah-loader-v8.3.3.js",
   import.meta.url,
 );
 
