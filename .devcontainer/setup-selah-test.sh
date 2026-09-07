@@ -11,8 +11,8 @@ stage="$(mktemp -d "${repo_root}/.selah-stage-XXXXXX")"
 
 base_client_sha="6e775ed50e83a6ba976aea593e0ef70ed74b662f652f3f47f616499a85005ba4"
 base_index_sha="bf37f956c331a6275ec8a5d7a6741b55aac77ffead7330efeae58e252b723cfa"
-release_client_sha="bb6060cd64737bdd8c4f1ee899886b35723257dc28e814637e38453d2f7899dc"
-release_marker=".ready-v8.3.8-bb6060cd"
+release_client_sha="5ed22bfe617383f842938fe6218985ae322045f1ae912e3b53c66815ea43f4e5"
+release_marker=".ready-v8.3.8-5ed22bfe"
 
 require_repo_child() {
   case "$1" in

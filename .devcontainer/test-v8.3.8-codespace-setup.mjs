@@ -34,12 +34,12 @@ test("Codespaces setup publishes the verified v8.3.8 lifecycle client", async ()
 
   assert.equal(
     sha256(client),
-    "bb6060cd64737bdd8c4f1ee899886b35723257dc28e814637e38453d2f7899dc",
+    "5ed22bfe617383f842938fe6218985ae322045f1ae912e3b53c66815ea43f4e5",
   );
-  assert.match(index, /selahmc-client-v8\.3\.8\.js\?v=bb6060cd/);
+  assert.match(index, /selahmc-client-v8\.3\.8\.js\?v=5ed22bfe/);
   assert.doesNotMatch(index, /selah-diagnostics\.js|selahmc-client-v8\.3\.3\.js/);
   assert.equal(
-    (await stat(join(siteRoot, ".ready-v8.3.8-bb6060cd"))).isFile(),
+    (await stat(join(siteRoot, ".ready-v8.3.8-5ed22bfe"))).isFile(),
     true,
   );
   await assert.rejects(stat(join(siteRoot, "selahmc-client-v8.3.3.js")), {

@@ -9,7 +9,7 @@ How to start
 ------------
 
 1. Extract the ENTIRE ZIP. Do not run it from inside the ZIP preview.
-2. Open the extracted SelahMC-v8.3.8-Portable-Windows folder.
+2. Open the extracted SelahMC folder.
 3. Double-click START_SELAHMC.cmd.
 4. Keep the SelahMC command window open while playing.
 

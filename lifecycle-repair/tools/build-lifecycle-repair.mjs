@@ -467,14 +467,14 @@ function applyLifecycleRuntimeTransforms(source, replacements) {
     },
   ]);
 
-  // Font rendering can ask for the last direct render while a display list is
-  // being compiled. renderBuffer() intentionally clears that replay handle in
-  // this mode, so renderAgain() must skip the replay instead of constructing
-  // the upstream "same vertices twice" exception.
+  // Font rendering can ask for the last direct render after renderBuffer() has
+  // cleared that replay handle. The generated IvL flag selects VAO emulation;
+  // it does not prove that a replay exists. Treat a missing lastRender as a
+  // no-op in either VAO mode instead of constructing the upstream exception.
   patchFunction("Cxq", [{
     before: "b=IvZ;if(b===null){b=new Fo;Bg(b,C(1416));I(b);}b=b.b2V.Dh;",
-    after: "b=IvZ;if(b===null){if(IvL)return;b=new Fo;Bg(b,C(1416));I(b);}b=b.b2V.Dh;",
-    label: "display-list replay guard",
+    after: "b=IvZ;if(b===null)return;b=b.b2V.Dh;",
+    label: "missing font replay guard",
     metric: "fontDisplayListReplaySafety",
   }]);
 

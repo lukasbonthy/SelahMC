@@ -1088,7 +1088,7 @@ test("camera-and-render validates the current screen before virtual drawing", ()
   );
 });
 
-test("font replay skips the missing direct render while compiling a display list", async (t) => {
+test("font replay treats a missing direct render as a no-op in every VAO mode", async (t) => {
   const common = {
     Fj: () => undefined,
     IvZ: null,
@@ -1096,18 +1096,36 @@ test("font replay skips the missing direct render while compiling a display list
     Bg: () => undefined,
     C: () => 0,
     I: () => {
-      throw new Error("renderAgain should not throw during display-list compilation");
+      throw new Error("renderAgain should not construct its upstream exception");
     },
   };
 
-  await t.test("display-list compilation is a no-op", () => {
-    const { fn } = evaluateGenerated("Cxq", { ...common, IvL: 1 });
-    assert.doesNotThrow(() => fn());
-  });
+  for (const IvL of [0, 1]) {
+    await t.test(`missing replay is a no-op when IvL=${IvL}`, () => {
+      const { fn } = evaluateGenerated("Cxq", { ...common, IvL });
+      assert.doesNotThrow(() => fn());
+    });
+  }
 
-  await t.test("normal rendering keeps the upstream invariant", () => {
-    const { fn } = evaluateGenerated("Cxq", { ...common, IvL: 0 });
-    assert.throws(() => fn(), /renderAgain should not throw/);
+  await t.test("an available direct render still replays", () => {
+    const calls = [];
+    const render = { b2V: { Dh: "vao" } };
+    const { fn } = evaluateGenerated("Cxq", {
+      ...common,
+      IvL: 0,
+      IvZ: render,
+      Iv0: "triangles",
+      Iv1: 6,
+      F5Y: (vao) => calls.push(["bind", vao]),
+      DOQ: (value) => value,
+      DQ4: (...args) => calls.push(["draw", ...args]),
+    });
+
+    fn();
+    assert.deepEqual(calls, [
+      ["bind", "vao"],
+      ["draw", render, "triangles", 0, 6],
+    ]);
   });
 });
 

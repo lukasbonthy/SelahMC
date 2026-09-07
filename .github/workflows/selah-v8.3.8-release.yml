@@ -63,8 +63,12 @@ jobs:
       - name: Verify release archives
         run: |
           set -euo pipefail
+          client_short_sha="$(sha256sum lifecycle-repair/dist/work/selahmc-client-v8.3.8.js | cut -c1-8)"
+          PORTABLE_ARCHIVE="SelahMC-v8.3.8-${client_short_sha}-Portable-Windows.zip"
+          test -f "lifecycle-repair/dist/${PORTABLE_ARCHIVE}"
+          echo "PORTABLE_ARCHIVE=${PORTABLE_ARCHIVE}" >> "${GITHUB_ENV}"
           cd lifecycle-repair/dist
-          for archive in SelahMC-v8.3.8-Portable-Windows.zip SelahMC-v8.3.8-Lifecycle-Transaction.zip; do
+          for archive in "${PORTABLE_ARCHIVE}" SelahMC-v8.3.8-Lifecycle-Transaction.zip; do
             unzip -t "${archive}"
             sha256sum "${archive}" > "${archive}.sha256"
           done
@@ -76,7 +80,7 @@ jobs:
           set -euo pipefail
           tag="v8.3.8-portable"
           cd lifecycle-repair/dist
-          artifacts=(SelahMC-v8.3.8-Portable-Windows.zip SelahMC-v8.3.8-Portable-Windows.zip.sha256 SelahMC-v8.3.8-Lifecycle-Transaction.zip SelahMC-v8.3.8-Lifecycle-Transaction.zip.sha256)
+          artifacts=("${PORTABLE_ARCHIVE}" "${PORTABLE_ARCHIVE}.sha256" SelahMC-v8.3.8-Lifecycle-Transaction.zip SelahMC-v8.3.8-Lifecycle-Transaction.zip.sha256)
 
           if gh release view "${tag}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
             # A rerun must not silently serve bytes from another repair commit.
