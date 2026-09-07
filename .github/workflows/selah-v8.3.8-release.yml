@@ -2,7 +2,7 @@ name: Build SelahMC v8.3.8 portable release
 
 on:
   push:
-    branches: ["lifecycle-barrier-v8.3.6"]
+    branches: ["stability-v8.3.8"]
     paths:
       - ".github/workflows/selah-v8.3.8-release.yml"
       - ".devcontainer/**"
@@ -67,6 +67,7 @@ jobs:
           PORTABLE_ARCHIVE="SelahMC-v8.3.8-${client_short_sha}-Portable-Windows.zip"
           test -f "lifecycle-repair/dist/${PORTABLE_ARCHIVE}"
           echo "PORTABLE_ARCHIVE=${PORTABLE_ARCHIVE}" >> "${GITHUB_ENV}"
+          echo "CLIENT_SHORT_SHA=${client_short_sha}" >> "${GITHUB_ENV}"
           cd lifecycle-repair/dist
           for archive in "${PORTABLE_ARCHIVE}" SelahMC-v8.3.8-Lifecycle-Transaction.zip; do
             unzip -t "${archive}"
@@ -78,7 +79,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag="v8.3.8-portable"
+          tag="v8.3.8-${CLIENT_SHORT_SHA}-portable"
           cd lifecycle-repair/dist
           artifacts=("${PORTABLE_ARCHIVE}" "${PORTABLE_ARCHIVE}.sha256" SelahMC-v8.3.8-Lifecycle-Transaction.zip SelahMC-v8.3.8-Lifecycle-Transaction.zip.sha256)
 
@@ -99,7 +100,7 @@ jobs:
             gh release create "${tag}" "${artifacts[@]}" \
               --repo "${GITHUB_REPOSITORY}" \
               --target "${GITHUB_SHA}" \
-              --title "SelahMC v8.3.8 Lifecycle Repair" \
+              --title "SelahMC v8.3.8 ${CLIENT_SHORT_SHA} Lifecycle Repair" \
               --notes-file ../packaging/release-notes.md \
               --prerelease
           fi

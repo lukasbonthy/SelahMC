@@ -39,10 +39,24 @@ test("release workflow verifies and uploads the hash-qualified portable archive"
   );
 
   assert.doesNotMatch(workflow, /SelahMC-v8\.3\.8-Portable-Windows\.zip/);
+  assert.match(workflow, /branches: \["stability-v8\.3\.8"\]/);
   assert.match(workflow, /sha256sum lifecycle-repair\/dist\/work\/selahmc-client-v8\.3\.8\.js/);
   assert.match(workflow, /PORTABLE_ARCHIVE/);
+  assert.match(workflow, /CLIENT_SHORT_SHA/);
   assert.match(workflow, /for archive in "\$\{PORTABLE_ARCHIVE\}"/);
   assert.match(workflow, /artifacts=\("\$\{PORTABLE_ARCHIVE\}" "\$\{PORTABLE_ARCHIVE\}\.sha256"/);
+  assert.match(workflow, /tag="v8\.3\.8-\$\{CLIENT_SHORT_SHA\}-portable"/);
+  assert.doesNotMatch(workflow, /tag="v8\.3\.8-portable"/);
+});
+
+test("release notes identify the font replay repair", async () => {
+  const notes = await readFile(
+    new URL("packaging/release-notes.md", lifecycleRoot),
+    "utf8",
+  );
+
+  assert.match(notes, /renderAgain\(\)/);
+  assert.match(notes, /missing cached direct render/);
 });
 
 test("portable instructions do not promise the obsolete unqualified folder", async () => {

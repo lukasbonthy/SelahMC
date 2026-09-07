@@ -4,6 +4,7 @@ Changes from v8.3.7:
 - WorldClient entity lookup handles an absent local player and still looks up remote entities normally. Existing unknown-entity packet handling is preserved.
 - Sky mesh cleanup clears the correct index-buffer and vertex-array fields, preventing repeated deletion and retaining invalid handles.
 - The deferred renderer stays disabled through EPK/resource-manager reload and opens only after Selah reports `Finished loading`, preventing stale VAO/program use during the hand-off.
+- Font strike/underline shadow replay now treats a missing cached direct render as a safe no-op, preventing `EaglercraftGPU.renderAgain()` from throwing during loading-overlay display-list rendering.
 - The singleplayer worker explicitly uses the packaged client URL and cache hash.
 - Portable launcher binds the first available localhost port from 3001 through 3010, without terminating another process. A custom --port starts the same bounded search there.
 
