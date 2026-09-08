@@ -40,6 +40,22 @@ test("release refuses an index with ambiguous Selah client scripts", () => {
   );
 });
 
+test("release hash-pins exactly one repaired OptiFine bridge script", () => {
+  const index = '<script src="selah-optifine-bridge-v8.3.3.js"></script>';
+
+  assert.equal(
+    packageRelease.rewriteOptiFineBridgeScript(
+      index,
+      "43daa2d91bd9927b736543cd418766c3",
+    ),
+    '<script src="selah-optifine-bridge-v8.3.3.js?v=43daa2d9"></script>',
+  );
+  assert.throws(
+    () => packageRelease.rewriteOptiFineBridgeScript(`${index}\n${index}`, "43daa2d9"),
+    /OptiFine bridge script: expected 1, found 2/,
+  );
+});
+
 
 test("release worker URL points to the exact local client including its hash", () => {
  const html = packageRelease.rewriteClientScript('<script src="selahmc-client-v8.3.5.js?v=abcd"></script>', "1234567890abcdef");

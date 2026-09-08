@@ -11,8 +11,10 @@ stage="$(mktemp -d "${repo_root}/.selah-stage-XXXXXX")"
 
 base_client_sha="6e775ed50e83a6ba976aea593e0ef70ed74b662f652f3f47f616499a85005ba4"
 base_index_sha="bf37f956c331a6275ec8a5d7a6741b55aac77ffead7330efeae58e252b723cfa"
-release_client_sha="5ed22bfe617383f842938fe6218985ae322045f1ae912e3b53c66815ea43f4e5"
-release_marker=".ready-v8.3.8-5ed22bfe"
+base_bridge_sha="9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd"
+release_client_sha="f0797f8087977cb6428eec1d9564ece840922a23850cead6dffac54c2dd05bb2"
+release_bridge_sha="43daa2d91bd9927b736543cd418766c383a037faec2a3d5725d7b1b786e62101"
+release_marker=".ready-v8.3.8-f0797f80-43daa2d9"
 
 require_repo_child() {
   case "$1" in
@@ -62,6 +64,10 @@ fetch_pinned \
   "index.html" \
   "${source_root}/index.html" \
   "${base_index_sha}"
+fetch_pinned \
+  "selah-optifine-bridge-v8.3.3.js" \
+  "${source_root}/selah-optifine-bridge-v8.3.3.js" \
+  "${base_bridge_sha}"
 
 export SELAH_STAGE="${stage}"
 export SELAH_SOURCE_URL_RESOLVED="${source_url%/}"
@@ -95,13 +101,15 @@ release_root="${repair_root}/dist/SelahMC-v8.3.8-Lifecycle-Transaction"
 cp -- "${release_root}/index.html" "${stage}/index.html"
 cp -- "${release_root}/selahmc-client-v8.3.8.js" \
   "${stage}/selahmc-client-v8.3.8.js"
+cp -- "${release_root}/selah-optifine-bridge-v8.3.3.js" \
+  "${stage}/selah-optifine-bridge-v8.3.3.js"
 
 (
   cd "${stage}"
   sha256sum --check <<SUMS
 ${release_client_sha}  selahmc-client-v8.3.8.js
+${release_bridge_sha}  selah-optifine-bridge-v8.3.3.js
 766018891402456aee3c803014b6d1158ccbf0e9dfd7004975dd74cd884cb43b  selah-loader-v8.3.3.js
-9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  selah-optifine-bridge-v8.3.3.js
 880c2d18e6f120ec735ab770b655160edc9d473b6a6326e75027723aedf459fd  selahmc-assets-v8.3.3.epk
 SUMS
 )

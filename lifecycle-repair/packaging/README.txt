@@ -46,5 +46,7 @@ Default live directory: /srv/selahmc/client
 Default backups: /home/ubuntu/selahmc-client-backups/<UTC timestamp>
 
 The installer verifies every package hash before it touches the live client,
-keeps selahmc-client-v8.3.3.js in place, backs up the current index and client,
-and atomically switches index.html to the versioned v8.3.8 bundle.
+keeps selahmc-client-v8.3.3.js in place, backs up the current index, clients,
+and OptiFine bridge, then atomically switches index.html to the hash-pinned
+v8.3.8 client and repaired shader bridge. Its printed rollback commands restore
+the previous bridge and same-name client before switching the old index back.

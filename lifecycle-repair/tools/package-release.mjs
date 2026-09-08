@@ -13,11 +13,13 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
 import { replaceExact, transformBundle } from "./build-lifecycle-repair.mjs";
+import { transformOptiFineBridge } from "./patch-optifine-bridge.mjs";
 
 const execFileAsync = promisify(execFile);
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
 export const RELEASE_NAME = "SelahMC-v8.3.8-Lifecycle-Transaction";
+export const OPTIFINE_BRIDGE_FILE = "selah-optifine-bridge-v8.3.3.js";
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -41,6 +43,19 @@ export function rewriteClientScript(index, bundleSha256) {
   return rewritten.slice(0, tagStart) + initializer + rewritten.slice(tagStart);
 }
 
+export function rewriteOptiFineBridgeScript(index, bridgeSha256) {
+  const bridgeScriptPattern =
+    /src="selah-optifine-bridge-v\d+\.\d+\.\d+\.js(?:\?v=[a-f0-9]+)?"/gu;
+  const matches = index.match(bridgeScriptPattern) || [];
+  if (matches.length !== 1) {
+    throw new Error(
+      `index OptiFine bridge script: expected 1, found ${matches.length}`,
+    );
+  }
+  const bridgeURL = `${OPTIFINE_BRIDGE_FILE}?v=${bridgeSha256.slice(0, 8)}`;
+  return index.replace(bridgeScriptPattern, `src="${bridgeURL}"`);
+}
+
 function assertChildPath(parent, child) {
   const normalizedParent = `${resolve(parent)}${sep}`;
   const normalizedChild = resolve(child);
@@ -58,6 +73,10 @@ export async function buildRelease(options = {}) {
   const baseIndexPath = resolve(
     options.baseIndexPath || join(projectRoot, "../recovered-live/index.html"),
   );
+  const baseBridgePath = resolve(
+    options.baseBridgePath ||
+      join(projectRoot, `../recovered-live/${OPTIFINE_BRIDGE_FILE}`),
+  );
   const barrierPath = resolve(
     options.barrierPath || join(projectRoot, "src/world-lifecycle-barrier.js"),
   );
@@ -66,17 +85,23 @@ export async function buildRelease(options = {}) {
   assertChildPath(outputRoot, releaseDirectory);
   assertChildPath(outputRoot, zipPath);
 
-  const [baseSource, baseIndex, barrierSource, installerSource, readmeSource] =
+  const [baseSource, baseIndex, baseBridge, barrierSource, installerSource, readmeSource] =
     await Promise.all([
       readFile(baseBundlePath, "utf8"),
       readFile(baseIndexPath, "utf8"),
+      readFile(baseBridgePath, "utf8"),
       readFile(barrierPath, "utf8"),
       readFile(join(projectRoot, "packaging/install.sh"), "utf8"),
       readFile(join(projectRoot, "packaging/README.txt"), "utf8"),
     ]);
   const transformed = transformBundle(baseSource, barrierSource);
+  const transformedBridge = transformOptiFineBridge(baseBridge);
   const bundleSha256 = transformed.outputSha256;
-  const versionedIndex = rewriteClientScript(baseIndex, bundleSha256);
+  const bridgeSha256 = sha256(transformedBridge.code);
+  const versionedIndex = rewriteOptiFineBridgeScript(
+    rewriteClientScript(baseIndex, bundleSha256),
+    bridgeSha256,
+  );
   const patchedIndex = replaceExact(
     versionedIndex,
     '\t\t<script type="text/javascript" src="selah-diagnostics.js"></script>\n',
@@ -94,6 +119,7 @@ export async function buildRelease(options = {}) {
     "README.txt": readmeSource,
     "index.html": patchedIndex,
     "install.sh": installerSource,
+    [OPTIFINE_BRIDGE_FILE]: transformedBridge.code,
     "selahmc-client-v8.3.8.js": transformed.code,
   };
   for (const [name, contents] of Object.entries(files)) {
@@ -115,6 +141,11 @@ export async function buildRelease(options = {}) {
     ["--check", join(releaseDirectory, "selahmc-client-v8.3.8.js")],
     { encoding: "utf8" },
   );
+  await execFileAsync(
+    process.execPath,
+    ["--check", join(releaseDirectory, OPTIFINE_BRIDGE_FILE)],
+    { encoding: "utf8" },
+  );
 
   const stableTime = new Date("2000-01-01T00:00:00.000Z");
   const releaseFiles = [
@@ -122,6 +153,7 @@ export async function buildRelease(options = {}) {
     "SHA256SUMS",
     "index.html",
     "install.sh",
+    OPTIFINE_BRIDGE_FILE,
     "selahmc-client-v8.3.8.js",
   ];
   for (const name of releaseFiles) {
@@ -141,6 +173,7 @@ export async function buildRelease(options = {}) {
   const zipContents = await readFile(zipPath);
 
   return {
+    bridgeSha256,
     bundleSha256,
     releaseDirectory,
     zipPath,

@@ -42,7 +42,12 @@ async function writeFixtureAssets(root) {
   for (const assetPath of PORTABLE_ASSET_PATHS) {
     const outputPath = join(root, assetPath);
     await mkdir(dirname(outputPath), { recursive: true });
-    await writeFile(outputPath, `portable fixture: ${assetPath}\n`, "utf8");
+    const contents = assetPath === "selah-optifine-bridge-v8.3.3.js"
+      ? await readFile(
+        new URL("../../recovered-live/selah-optifine-bridge-v8.3.3.js", import.meta.url),
+      )
+      : `portable fixture: ${assetPath}\n`;
+    await writeFile(outputPath, contents);
   }
 }
 
@@ -103,6 +108,12 @@ test("portable release contains a complete no-install Windows client", async () 
         `selahmc-client-v8\\.3\\.8\\.js\\?v=${release.bundleSha256.slice(0, 8)}`,
       ),
     );
+    assert.match(
+      index,
+      new RegExp(
+        `selah-optifine-bridge-v8\\.3\\.3\\.js\\?v=${release.bridgeSha256.slice(0, 8)}`,
+      ),
+    );
     assert.doesNotMatch(index, /selah-diagnostics\.js|\/__selah_diag/);
     assert.doesNotMatch(index, /(?:src|href)="https?:\/\/selahmc\.me\/client\//);
 
@@ -151,21 +162,35 @@ test("portable release contains a complete no-install Windows client", async () 
       listing.stdout.trim().split("\n").sort(),
       files.map((file) => `${expectedReleaseName}/${file}`).sort(),
     );
+    const zippedBridge = await execFileAsync(
+      "unzip",
+      [
+        "-p",
+        release.zipPath,
+        `${expectedReleaseName}/client/selah-optifine-bridge-v8.3.3.js`,
+      ],
+      { encoding: "utf8" },
+    );
+    assert.match(zippedBridge.stdout, /document\.exitFullscreen/);
+    assert.match(zippedBridge.stdout, /gl\.DRAW_FRAMEBUFFER_BINDING/);
+    assert.match(zippedBridge.stdout, /gl\.colorMask/);
   } finally {
     await rm(directory, { force: true, recursive: true });
   }
 });
 
-test("portable release can overlay a patched loader without changing the pinned asset cache", async () => {
+test("portable release can overlay the loader without changing the pinned asset cache", async () => {
   const directory = await mkdtemp(join(tmpdir(), "selah-portable-loader-override-"));
   try {
     const assetRoot = join(directory, "assets");
-    const overridePath = join(directory, "patched-loader.js");
+    const loaderOverridePath = join(directory, "patched-loader.js");
     await writeFixtureAssets(assetRoot);
-    await writeFile(overridePath, "patched loader marker\n", "utf8");
+    await writeFile(loaderOverridePath, "patched loader marker\n", "utf8");
     const release = await buildPortableRelease({
       assetRoot,
-      assetOverrides: { "selah-loader-v8.3.3.js": overridePath },
+      assetOverrides: {
+        "selah-loader-v8.3.3.js": loaderOverridePath,
+      },
       goBinary: process.env.SELAH_GO_BIN || "go",
       outputRoot: join(directory, "output"),
     });
@@ -176,6 +201,13 @@ test("portable release can overlay a patched loader without changing the pinned 
         "utf8",
       ),
       "patched loader marker\n",
+    );
+    assert.match(
+      await readFile(
+        join(release.releaseDirectory, "client", "selah-optifine-bridge-v8.3.3.js"),
+        "utf8",
+      ),
+      /document\.exitFullscreen/,
     );
   } finally {
     await rm(directory, { force: true, recursive: true });

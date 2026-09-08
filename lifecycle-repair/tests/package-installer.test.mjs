@@ -40,10 +40,20 @@ async function makeFakeClientRoot(parent) {
     "old-client-v8.3.5\n",
     "utf8",
   );
+  await writeFile(
+    join(target, "selahmc-client-v8.3.8.js"),
+    "old-client-v8.3.8\n",
+    "utf8",
+  );
+  await writeFile(
+    join(target, "selah-optifine-bridge-v8.3.3.js"),
+    "old-optifine-bridge\n",
+    "utf8",
+  );
   return target;
 }
 
-test("release contains the versioned client, hash-pinned index, and five files", async () => {
+test("release contains the versioned client, repaired bridge, and hash-pinned index", async () => {
   const directory = await mkdtemp(join(tmpdir(), "selah-package-layout-"));
   try {
     const release = await buildRelease({ outputRoot: directory });
@@ -61,6 +71,7 @@ test("release contains the versioned client, hash-pinned index, and five files",
       "SHA256SUMS",
       "index.html",
       "install.sh",
+      "selah-optifine-bridge-v8.3.3.js",
       "selahmc-client-v8.3.8.js",
     ]);
     assert.match(
@@ -71,6 +82,19 @@ test("release contains the versioned client, hash-pinned index, and five files",
     );
     assert.doesNotMatch(index, /selah-diagnostics\.js/);
     assert.doesNotMatch(index, /__selah_diag/);
+    assert.match(
+      index,
+      new RegExp(
+        `selah-optifine-bridge-v8\\.3\\.3\\.js\\?v=${release.bridgeSha256.slice(0, 8)}`,
+      ),
+    );
+    const bridge = await readFile(
+      join(release.releaseDirectory, "selah-optifine-bridge-v8.3.3.js"),
+      "utf8",
+    );
+    assert.match(bridge, /document\.exitFullscreen/);
+    assert.match(bridge, /gl\.DRAW_FRAMEBUFFER_BINDING/);
+    assert.match(bridge, /gl\.colorMask/);
     assert.deepEqual(
       listing.stdout.trim().split("\n").sort(),
       files
@@ -123,6 +147,14 @@ test("installer preserves v8.3.3, creates a rollback backup, and installs atomic
       await readFile(join(backup, "selahmc-client-v8.3.5.js"), "utf8"),
       "old-client-v8.3.5\n",
     );
+    assert.equal(
+      await readFile(join(backup, "selah-optifine-bridge-v8.3.3.js"), "utf8"),
+      "old-optifine-bridge\n",
+    );
+    assert.equal(
+      await readFile(join(backup, "selahmc-client-v8.3.8.js"), "utf8"),
+      "old-client-v8.3.8\n",
+    );
     const installedIndex = await readFile(join(target, "index.html"), "utf8");
     assert.match(
       installedIndex,
@@ -134,8 +166,44 @@ test("installer preserves v8.3.3, creates a rollback backup, and installs atomic
       (await stat(join(target, "selahmc-client-v8.3.8.js"))).mode & 0o777,
       0o644,
     );
+    assert.equal(
+      await readFile(join(target, "selah-optifine-bridge-v8.3.3.js"), "utf8"),
+      await readFile(
+        join(release.releaseDirectory, "selah-optifine-bridge-v8.3.3.js"),
+        "utf8",
+      ),
+    );
     assert.match(result.stdout, /Deployment complete/);
-    assert.match(result.stdout, /Rollback index/);
+    assert.match(result.stdout, /Rollback files \(run in this order\)/);
+    const bridgeRollback = result.stdout.indexOf(
+      "selah-optifine-bridge-v8.3.3.js",
+    );
+    const clientRollback = result.stdout.indexOf("selahmc-client-v8.3.8.js");
+    const indexRollback = result.stdout.lastIndexOf("index.html");
+    assert.ok(bridgeRollback >= 0 && bridgeRollback < clientRollback);
+    assert.ok(clientRollback < indexRollback);
+
+    for (const rollbackFile of [
+      "selah-optifine-bridge-v8.3.3.js",
+      "selahmc-client-v8.3.8.js",
+      "index.html",
+    ]) {
+      await execFileAsync("install", [
+        "-m",
+        "0644",
+        join(backup, rollbackFile),
+        join(target, rollbackFile),
+      ]);
+    }
+    assert.equal(
+      await readFile(join(target, "selah-optifine-bridge-v8.3.3.js"), "utf8"),
+      "old-optifine-bridge\n",
+    );
+    assert.equal(
+      await readFile(join(target, "selahmc-client-v8.3.8.js"), "utf8"),
+      "old-client-v8.3.8\n",
+    );
+    assert.equal(await readFile(join(target, "index.html"), "utf8"), "old-index-v8.3.3\n");
   } finally {
     await rm(directory, { force: true, recursive: true });
   }
@@ -159,6 +227,14 @@ test("corrupt package fails before changing the client root", async () => {
       join(target, "selahmc-client-v8.3.3.js"),
       "utf8",
     );
+    const originalVersionedClient = await readFile(
+      join(target, "selahmc-client-v8.3.8.js"),
+      "utf8",
+    );
+    const originalBridge = await readFile(
+      join(target, "selah-optifine-bridge-v8.3.3.js"),
+      "utf8",
+    );
     const installer = join(corruptRelease, "install.sh");
     await chmod(installer, 0o755);
 
@@ -179,9 +255,14 @@ test("corrupt package fails before changing the client root", async () => {
       await readFile(join(target, "selahmc-client-v8.3.3.js"), "utf8"),
       originalClient,
     );
-    await assert.rejects(stat(join(target, "selahmc-client-v8.3.8.js")), {
-      code: "ENOENT",
-    });
+    assert.equal(
+      await readFile(join(target, "selahmc-client-v8.3.8.js"), "utf8"),
+      originalVersionedClient,
+    );
+    assert.equal(
+      await readFile(join(target, "selah-optifine-bridge-v8.3.3.js"), "utf8"),
+      originalBridge,
+    );
     await assert.rejects(readdir(backupRoot), { code: "ENOENT" });
   } finally {
     await rm(directory, { force: true, recursive: true });

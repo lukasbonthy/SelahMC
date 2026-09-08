@@ -20,6 +20,15 @@ on http://127.0.0.1:3001 and opens that address in the default browser.
 Internet access is still required to join wss://mc.selahmc.me and for online
 features such as relays, skins, Microsoft sign-in, and server resource packs.
 
+Shader settings
+---------------
+
+The Shaders button opens SelahMC's isolated OptiFine Shader Packs panel above
+the game. Shader post-processing pauses while this panel is open. Choose Done
+to return to the client. If the game canvas is fullscreen, SelahMC safely
+returns to windowed mode before showing the panel so it cannot be hidden behind
+the fullscreen canvas.
+
 If it does not start
 --------------------
 

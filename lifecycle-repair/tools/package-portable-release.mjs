@@ -18,7 +18,10 @@ import { dirname, extname, isAbsolute, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
-import { buildRelease } from "./package-release.mjs";
+import {
+  OPTIFINE_BRIDGE_FILE,
+  buildRelease,
+} from "./package-release.mjs";
 
 const execFileAsync = promisify(execFile);
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -293,6 +296,10 @@ export async function buildPortableRelease(options = {}) {
   const coreRelease = await buildRelease({
     baseBundlePath: options.baseBundlePath,
     baseIndexPath: options.baseIndexPath,
+    baseBridgePath:
+      options.baseBridgePath ||
+      options.assetOverrides?.[OPTIFINE_BRIDGE_FILE] ||
+      childPath(assetRoot, OPTIFINE_BRIDGE_FILE),
     barrierPath: options.barrierPath,
     outputRoot: coreOutputRoot,
   });
@@ -345,7 +352,13 @@ export async function buildPortableRelease(options = {}) {
   await copyAssetTree(
     assetRoot,
     join(releaseDirectory, "client"),
-    options.assetOverrides,
+    {
+      ...options.assetOverrides,
+      [OPTIFINE_BRIDGE_FILE]: join(
+        coreRelease.releaseDirectory,
+        OPTIFINE_BRIDGE_FILE,
+      ),
+    },
   );
 
   const checksumFiles = await walkFiles(releaseDirectory);
@@ -374,6 +387,7 @@ export async function buildPortableRelease(options = {}) {
   const zipBytes = await readFile(zipPath);
 
   return {
+    bridgeSha256: coreRelease.bridgeSha256,
     bundleSha256: coreRelease.bundleSha256,
     releaseDirectory,
     releaseName,
@@ -386,22 +400,23 @@ async function main() {
   const outputRoot = resolve(join(projectRoot, "dist"));
   const assetRoot = join(outputRoot, "portable-cache/assets");
   const loaderOverride = join(projectRoot, "assets/selah-loader-v8.3.3.js");
-  let assetOverrides;
+  const assetOverrides = {};
   try {
     await stat(loaderOverride);
     const cachedLoader = childPath(assetRoot, "selah-loader-v8.3.3.js");
     await mkdir(dirname(cachedLoader), { recursive: true });
     await copyFile(loaderOverride, cachedLoader);
-    assetOverrides = { "selah-loader-v8.3.3.js": loaderOverride };
+    assetOverrides["selah-loader-v8.3.3.js"] = loaderOverride;
   } catch (error) {
     if (error?.code !== "ENOENT") throw error;
   }
-  const manifest = assetOverrides
+  const manifest = Object.keys(assetOverrides).length
     ? DEFAULT_ASSET_MANIFEST.filter(
       (asset) => asset.path !== "selah-loader-v8.3.3.js",
     )
     : DEFAULT_ASSET_MANIFEST;
   await fetchPortableAssets({ destination: assetRoot, manifest });
+
   const release = await buildPortableRelease({
     assetRoot,
     assetOverrides,
