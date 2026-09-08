@@ -649,6 +649,48 @@ function applyLifecycleRuntimeTransforms(source, replacements) {
 function SD_CjF(){var SD_capabilityResult=SD_CjF_original.apply(this,arguments);if(SD_capabilityResult===null||SD_capabilityResult===undefined)return SD_capabilityResult;if(SD_capabilityResult)return SD_capabilityResult;return SD_deferredCapabilityFallback()?1:0;}`;
   });
 
+  // The deferred TeaVM unit expects GameSettings.deferredShaderConf (xS) to
+  // have been constructed by the host GameSettings patch. Selah's merged host
+  // does not contain that field initializer, so both opening the settings UI
+  // and a resource reload can pass undefined into the deferred code. Restore
+  // the missing ownership boundary and load shader-pack metadata before any
+  // GUI or renderer code dereferences config.ft.
+  code = transformGeneratedFunction(code, "SD_openShaderScreen", (functionSource) => {
+    let result = replaceExact(
+      functionSource,
+      "case 5:SD_G$M();if(B()){break _;}$p=6;case 6:BQs(c);",
+      "case 5:SD_G$M();if(B()){break _;}d=a.f.w.xS;if(d===undefined||d===null){d=new SD_Bep;$p=8;continue _;}if(d.ft===undefined||d.ft===null){$p=10;continue _;}$p=6;case 6:BQs(c);",
+      1,
+      "deferred screen config precondition",
+    );
+    result = replaceExact(
+      result,
+      "case 7:HjP(d,c);if(B()){break _;}return;default:Gs();",
+      "case 7:HjP(d,c);if(B()){break _;}return;case 8:SD_Byw(d);if(B()){break _;}a.f.w.xS=d;$p=10;continue _;case 10:$z=DHk(a.f);if(B()){break _;}b=$z;d=a.f.w.xS;$p=11;case 11:SD_EkU(d,b);if(B()){break _;}$p=6;continue _;default:Gs();",
+      1,
+      "deferred screen config bootstrap states",
+    );
+    return result;
+  });
+  code = transformGeneratedFunction(code, "SD_CJB", (functionSource) => {
+    let result = replaceExact(
+      functionSource,
+      "try{d=c.w.xS;$p=2;continue _;}",
+      "try{d=c.w.xS;if(d===undefined||d===null){d=new SD_Bep;$p=7;continue _;}$p=2;continue _;}",
+      1,
+      "deferred reload config precondition",
+    );
+    result = replaceExact(
+      result,
+      "if(e!==null)e.CV=c.w.nv;return;default:Gs();",
+      "if(e!==null)e.CV=c.w.nv;return;case 7:SD_Byw(d);if(B()){break _;}c.w.xS=d;$p=2;continue _;default:Gs();",
+      1,
+      "deferred reload config bootstrap state",
+    );
+    return result;
+  });
+  replacements.deferredConfigBootstrap = 2;
+
   // The deferred settings screens were compiled in a separate TeaVM unit.
   // Its virtual method names (eM/fE/py) do not match the host client's
   // GuiScreen ABI (c$/el/lw). Keep the deferred aliases for calls inside that
