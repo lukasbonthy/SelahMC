@@ -128,8 +128,8 @@ func run() error {
 	defer listener.Close()
 	address := listener.Addr().String()
 
-	targetURL := fmt.Sprintf("http://%s/?portable=v8.3.8", address)
-	fmt.Println("SelahMC v8.3.8 Portable is running.")
+	targetURL := fmt.Sprintf("http://%s/?portable=v8.3.9", address)
+	fmt.Println("SelahMC v8.3.9 Portable is running.")
 	fmt.Println("Open:", targetURL)
 	fmt.Println("Keep this window open while playing. Close it to stop SelahMC.")
 	if *open {

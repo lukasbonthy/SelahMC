@@ -1,10 +1,10 @@
-name: Build SelahMC v8.3.8 portable release
+name: Build SelahMC v8.3.9 portable release
 
 on:
   push:
-    branches: ["stability-v8.3.8"]
+    branches: ["stability-v8.3.9"]
     paths:
-      - ".github/workflows/selah-v8.3.8-release.yml"
+      - ".github/workflows/selah-v8.3.9-release.yml"
       - ".devcontainer/**"
       - "lifecycle-repair/**"
   workflow_dispatch:
@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: selah-v8.3.8-portable-release
+  group: selah-v8.3.9-portable-release
   cancel-in-progress: false
 
 jobs:
@@ -67,13 +67,13 @@ jobs:
       - name: Verify release archives
         run: |
           set -euo pipefail
-          client_short_sha="$(sha256sum lifecycle-repair/dist/work/selahmc-client-v8.3.8.js | cut -c1-8)"
-          PORTABLE_ARCHIVE="SelahMC-v8.3.8-${client_short_sha}-Portable-Windows.zip"
+          client_short_sha="$(sha256sum lifecycle-repair/dist/work/selahmc-client-v8.3.9.js | cut -c1-8)"
+          PORTABLE_ARCHIVE="SelahMC-v8.3.9-${client_short_sha}-Portable-Windows.zip"
           test -f "lifecycle-repair/dist/${PORTABLE_ARCHIVE}"
           echo "PORTABLE_ARCHIVE=${PORTABLE_ARCHIVE}" >> "${GITHUB_ENV}"
           echo "CLIENT_SHORT_SHA=${client_short_sha}" >> "${GITHUB_ENV}"
           cd lifecycle-repair/dist
-          for archive in "${PORTABLE_ARCHIVE}" SelahMC-v8.3.8-Lifecycle-Transaction.zip; do
+          for archive in "${PORTABLE_ARCHIVE}" SelahMC-v8.3.9-Lifecycle-Transaction.zip; do
             unzip -t "${archive}"
             sha256sum "${archive}" > "${archive}.sha256"
           done
@@ -83,9 +83,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag="v8.3.8-${CLIENT_SHORT_SHA}-portable"
+          tag="v8.3.9-${CLIENT_SHORT_SHA}-portable"
           cd lifecycle-repair/dist
-          artifacts=("${PORTABLE_ARCHIVE}" "${PORTABLE_ARCHIVE}.sha256" SelahMC-v8.3.8-Lifecycle-Transaction.zip SelahMC-v8.3.8-Lifecycle-Transaction.zip.sha256)
+          artifacts=("${PORTABLE_ARCHIVE}" "${PORTABLE_ARCHIVE}.sha256" SelahMC-v8.3.9-Lifecycle-Transaction.zip SelahMC-v8.3.9-Lifecycle-Transaction.zip.sha256)
 
           if gh release view "${tag}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
             # A rerun must not silently serve bytes from another repair commit.
@@ -104,7 +104,7 @@ jobs:
             gh release create "${tag}" "${artifacts[@]}" \
               --repo "${GITHUB_REPOSITORY}" \
               --target "${GITHUB_SHA}" \
-              --title "SelahMC v8.3.8 ${CLIENT_SHORT_SHA} Lifecycle Repair" \
+              --title "SelahMC v8.3.9 ${CLIENT_SHORT_SHA} Lifecycle Repair" \
               --notes-file ../packaging/release-notes.md \
               --prerelease
           fi

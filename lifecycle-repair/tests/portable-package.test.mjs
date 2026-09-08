@@ -96,7 +96,7 @@ test("portable release contains a complete no-install Windows client", async () 
     });
 
     const expectedReleaseName =
-      `SelahMC-v8.3.8-${release.bundleSha256.slice(0, 8)}-Portable-Windows`;
+      `SelahMC-v8.3.9-${release.bundleSha256.slice(0, 8)}-Portable-Windows`;
     assert.equal(release.releaseName, expectedReleaseName);
     assert.equal(
       release.zipPath,
@@ -105,7 +105,7 @@ test("portable release contains a complete no-install Windows client", async () 
     assert.match(
       index,
       new RegExp(
-        `selahmc-client-v8\\.3\\.8\\.js\\?v=${release.bundleSha256.slice(0, 8)}`,
+        `selahmc-client-v8\\.3\\.9\\.js\\?v=${release.bundleSha256.slice(0, 8)}`,
       ),
     );
     assert.match(

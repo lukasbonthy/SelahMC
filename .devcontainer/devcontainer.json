@@ -1,5 +1,5 @@
 {
-  "name": "SelahMC v8.3.8 Lifecycle Test",
+  "name": "SelahMC v8.3.9 Lifecycle Test",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
@@ -11,7 +11,7 @@
   "forwardPorts": [8000],
   "portsAttributes": {
     "8000": {
-      "label": "SelahMC v8.3.8 Test",
+      "label": "SelahMC v8.3.9 Test",
       "onAutoForward": "openBrowser",
       "protocol": "http",
       "visibility": "private"

@@ -41,8 +41,8 @@ async function makeFakeClientRoot(parent) {
     "utf8",
   );
   await writeFile(
-    join(target, "selahmc-client-v8.3.8.js"),
-    "old-client-v8.3.8\n",
+    join(target, "selahmc-client-v8.3.9.js"),
+    "old-client-v8.3.9\n",
     "utf8",
   );
   await writeFile(
@@ -72,12 +72,12 @@ test("release contains the versioned client, repaired bridge, and hash-pinned in
       "index.html",
       "install.sh",
       "selah-optifine-bridge-v8.3.3.js",
-      "selahmc-client-v8.3.8.js",
+      "selahmc-client-v8.3.9.js",
     ]);
     assert.match(
       index,
       new RegExp(
-        `selahmc-client-v8\\.3\\.8\\.js\\?v=${release.bundleSha256.slice(0, 8)}`,
+        `selahmc-client-v8\\.3\\.9\\.js\\?v=${release.bundleSha256.slice(0, 8)}`,
       ),
     );
     assert.doesNotMatch(index, /selah-diagnostics\.js/);
@@ -98,7 +98,7 @@ test("release contains the versioned client, repaired bridge, and hash-pinned in
     assert.deepEqual(
       listing.stdout.trim().split("\n").sort(),
       files
-        .map((file) => `SelahMC-v8.3.8-Lifecycle-Transaction/${file}`)
+        .map((file) => `SelahMC-v8.3.9-Lifecycle-Transaction/${file}`)
         .sort(),
     );
   } finally {
@@ -152,18 +152,18 @@ test("installer preserves v8.3.3, creates a rollback backup, and installs atomic
       "old-optifine-bridge\n",
     );
     assert.equal(
-      await readFile(join(backup, "selahmc-client-v8.3.8.js"), "utf8"),
-      "old-client-v8.3.8\n",
+      await readFile(join(backup, "selahmc-client-v8.3.9.js"), "utf8"),
+      "old-client-v8.3.9\n",
     );
     const installedIndex = await readFile(join(target, "index.html"), "utf8");
     assert.match(
       installedIndex,
       new RegExp(
-        `selahmc-client-v8\\.3\\.8\\.js\\?v=${release.bundleSha256.slice(0, 8)}`,
+        `selahmc-client-v8\\.3\\.9\\.js\\?v=${release.bundleSha256.slice(0, 8)}`,
       ),
     );
     assert.equal(
-      (await stat(join(target, "selahmc-client-v8.3.8.js"))).mode & 0o777,
+      (await stat(join(target, "selahmc-client-v8.3.9.js"))).mode & 0o777,
       0o644,
     );
     assert.equal(
@@ -178,14 +178,14 @@ test("installer preserves v8.3.3, creates a rollback backup, and installs atomic
     const bridgeRollback = result.stdout.indexOf(
       "selah-optifine-bridge-v8.3.3.js",
     );
-    const clientRollback = result.stdout.indexOf("selahmc-client-v8.3.8.js");
+    const clientRollback = result.stdout.indexOf("selahmc-client-v8.3.9.js");
     const indexRollback = result.stdout.lastIndexOf("index.html");
     assert.ok(bridgeRollback >= 0 && bridgeRollback < clientRollback);
     assert.ok(clientRollback < indexRollback);
 
     for (const rollbackFile of [
       "selah-optifine-bridge-v8.3.3.js",
-      "selahmc-client-v8.3.8.js",
+      "selahmc-client-v8.3.9.js",
       "index.html",
     ]) {
       await execFileAsync("install", [
@@ -200,8 +200,8 @@ test("installer preserves v8.3.3, creates a rollback backup, and installs atomic
       "old-optifine-bridge\n",
     );
     assert.equal(
-      await readFile(join(target, "selahmc-client-v8.3.8.js"), "utf8"),
-      "old-client-v8.3.8\n",
+      await readFile(join(target, "selahmc-client-v8.3.9.js"), "utf8"),
+      "old-client-v8.3.9\n",
     );
     assert.equal(await readFile(join(target, "index.html"), "utf8"), "old-index-v8.3.3\n");
   } finally {
@@ -216,7 +216,7 @@ test("corrupt package fails before changing the client root", async () => {
     const corruptRelease = join(directory, "corrupt-release");
     await cp(release.releaseDirectory, corruptRelease, { recursive: true });
     await appendFile(
-      join(corruptRelease, "selahmc-client-v8.3.8.js"),
+      join(corruptRelease, "selahmc-client-v8.3.9.js"),
       "\n// corruption\n",
       "utf8",
     );
@@ -228,7 +228,7 @@ test("corrupt package fails before changing the client root", async () => {
       "utf8",
     );
     const originalVersionedClient = await readFile(
-      join(target, "selahmc-client-v8.3.8.js"),
+      join(target, "selahmc-client-v8.3.9.js"),
       "utf8",
     );
     const originalBridge = await readFile(
@@ -256,7 +256,7 @@ test("corrupt package fails before changing the client root", async () => {
       originalClient,
     );
     assert.equal(
-      await readFile(join(target, "selahmc-client-v8.3.8.js"), "utf8"),
+      await readFile(join(target, "selahmc-client-v8.3.9.js"), "utf8"),
       originalVersionedClient,
     );
     assert.equal(

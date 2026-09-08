@@ -436,17 +436,6 @@ function applyLifecycleRuntimeTransforms(source, replacements) {
   ]);
   protectContinuation("Dmj", "a.bD", "updateRenderer", 17);
 
-  // The native deferred shader GUI can inherit an invalid renderer state from
-  // the game canvas and leave the user on a black screen. Portable/web builds
-  // always load the isolated DOM shader panel, so prefer it and retain the
-  // native screen only as a fallback when the bridge is unavailable.
-  patchFunction("SD_openShaderScreen", [{
-    before: "case 0:b=a.f.w;$p=1;",
-    after: "case 0:if(SD_openOptiFine())return;b=a.f.w;$p=1;",
-    label: "safe browser shader panel",
-    metric: "shaderSettingsPanelSafety",
-  }]);
-
   patchFunction("FSs", [
     {
       after:

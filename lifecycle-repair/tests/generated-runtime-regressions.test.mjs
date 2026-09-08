@@ -1088,26 +1088,37 @@ test("camera-and-render validates the current screen before virtual drawing", ()
   );
 });
 
-test("shader settings opens the safe browser panel before touching the native screen", () => {
+test("shader settings opens the native deferred screen even when the browser bridge exists", () => {
   const calls = [];
+  class NativeDeferredShaderScreen {}
+  const minecraft = { w: { nv: 0 } };
+  const owner = { f: minecraft };
   const { fn } = evaluateGenerated("SD_openShaderScreen", {
+    BQs: (screen) => calls.push(["initialize", screen]),
+    DP8: (settings) => calls.push(["save", settings]),
+    HjP: (client, screen) => calls.push(["display", client, screen]),
+    SD_Biu: NativeDeferredShaderScreen,
+    SD_Cn1: () => true,
+    "SD_G$M": () => calls.push(["load-config"]),
+    SD_getEnabled: () => true,
     SD_openOptiFine: () => {
-      calls.push("open-panel");
-      return true;
-    },
-  });
-  const owner = {};
-  Object.defineProperty(owner, "f", {
-    get() {
-      throw new Error("native shader screen must not be entered when the safe panel opened");
+      throw new Error("browser bridge hijacked native screen");
     },
   });
 
-  assert.doesNotThrow(() => fn(owner));
-  assert.deepEqual(calls, ["open-panel"]);
+  fn(owner);
+
+  assert.deepEqual(calls[0], ["save", minecraft.w]);
+  assert.deepEqual(calls[1], ["load-config"]);
+  assert.equal(calls[2][0], "initialize");
+  assert.equal(calls[2][1] instanceof NativeDeferredShaderScreen, true);
+  assert.deepEqual(calls[3], ["display", minecraft, calls[2][1]]);
+  assert.equal(calls[2][1].com, 1);
+  assert.equal(calls[2][1].d68, owner);
+  assert.equal(minecraft.w.nv, 1);
 });
 
-test("shader settings retains the native fallback when the browser panel is unavailable", () => {
+test("shader settings shows the native unsupported screen when deferred rendering is unavailable", () => {
   const calls = [];
   class UnsupportedShaderScreen {}
   const minecraft = { w: { id: "settings" } };
@@ -1130,6 +1141,20 @@ test("shader settings retains the native fallback when the browser panel is unav
   assert.deepEqual(calls[2], ["display", minecraft, calls[1][1]]);
   assert.equal(calls[1][1].doJ, owner);
   assert.equal(calls[1][1].d92, "string-14521");
+});
+
+test("native shader screen opens the OptiFine bridge only from its separate action", () => {
+  let openCount = 0;
+  const { fn } = evaluateGenerated("SD_Eef", {
+    SD_openOptiFine: () => {
+      openCount += 1;
+      return true;
+    },
+  });
+
+  fn({}, { bq: 901 });
+
+  assert.equal(openCount, 1);
 });
 
 test("font replay treats a missing direct render as a no-op in every VAO mode", async (t) => {
@@ -1203,7 +1228,6 @@ test("real bundle records all centralized and resume-point gates exactly once", 
   assert.equal(transformed.replacements.tuffPotionCapture, 1);
   assert.equal(transformed.replacements.screenRenderSafety, 1);
   assert.equal(transformed.replacements.fontDisplayListReplaySafety, 1);
-  assert.equal(transformed.replacements.shaderSettingsPanelSafety, 1);
   assert.equal(transformed.replacements.loadWorldTransaction, 5);
   assert.equal(transformed.replacements.loadWorldResume, 38);
   assert.equal(transformed.replacements.loadWorldCompletion, 2);

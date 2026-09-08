@@ -1,4 +1,4 @@
-SelahMC v8.3.8 Lifecycle Transaction
+SelahMC v8.3.9 Lifecycle Transaction
 ================================
 
 This package repairs the multiplayer join lifecycle gap in the exact deployed
@@ -28,7 +28,7 @@ the development cloud browser could not reach the local test server.
 
 Windows PowerShell upload:
 
-scp "$env:USERPROFILE\Downloads\SelahMC-v8.3.8-Lifecycle-Transaction.zip" ubuntu@135.148.42.63:/home/ubuntu/
+scp "$env:USERPROFILE\Downloads\SelahMC-v8.3.9-Lifecycle-Transaction.zip" ubuntu@135.148.42.63:/home/ubuntu/
 
 Then connect:
 
@@ -37,8 +37,8 @@ ssh ubuntu@135.148.42.63
 Run on the VPS:
 
 cd /home/ubuntu
-unzip -q -o SelahMC-v8.3.8-Lifecycle-Transaction.zip -d /home/ubuntu/selahmc-v8.3.8-lifecycle-transaction
-cd /home/ubuntu/selahmc-v8.3.8-lifecycle-transaction/SelahMC-v8.3.8-Lifecycle-Transaction
+unzip -q -o SelahMC-v8.3.9-Lifecycle-Transaction.zip -d /home/ubuntu/selahmc-v8.3.9-lifecycle-transaction
+cd /home/ubuntu/selahmc-v8.3.9-lifecycle-transaction/SelahMC-v8.3.9-Lifecycle-Transaction
 chmod +x install.sh
 sudo ./install.sh
 
@@ -48,5 +48,5 @@ Default backups: /home/ubuntu/selahmc-client-backups/<UTC timestamp>
 The installer verifies every package hash before it touches the live client,
 keeps selahmc-client-v8.3.3.js in place, backs up the current index, clients,
 and OptiFine bridge, then atomically switches index.html to the hash-pinned
-v8.3.8 client and repaired shader bridge. Its printed rollback commands restore
+v8.3.9 client and repaired shader bridge. Its printed rollback commands restore
 the previous bridge and same-name client before switching the old index back.

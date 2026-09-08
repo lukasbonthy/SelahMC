@@ -1,8 +1,8 @@
-SelahMC v8.3.8 Portable for Windows
+SelahMC v8.3.9 Portable for Windows
 ===================================
 
 This is the no-install school-PC build. It includes the complete SelahMC
-v8.3.8 client, its 1.12.2 asset pack, plugins, launcher images, and portable
+v8.3.9 client, its 1.12.2 asset pack, plugins, launcher images, and portable
 localhost servers for Windows x64 and Windows ARM64.
 
 How to start
@@ -15,7 +15,7 @@ How to start
 
 The launcher requires no administrator access, installation, Python, Node,
 npm, registry change, or Windows service. It serves the bundled client only
-on http://127.0.0.1:3001 and opens that address in the default browser.
+on localhost and opens its selected port in the default browser.
 
 Internet access is still required to join wss://mc.selahmc.me and for online
 features such as relays, skins, Microsoft sign-in, and server resource packs.
@@ -23,11 +23,14 @@ features such as relays, skins, Microsoft sign-in, and server resource packs.
 Shader settings
 ---------------
 
-The Shaders button opens SelahMC's isolated OptiFine Shader Packs panel above
-the game. Shader post-processing pauses while this panel is open. Choose Done
-to return to the client. If the game canvas is fullscreen, SelahMC safely
-returns to windowed mode before showing the panel so it cannot be hidden behind
-the fullscreen canvas.
+The Shaders entry opens the native deferred/PBR settings in the Selah client.
+The built-in renderer and its original controls are retained. The separate
+OptiFine Packs... action opens the optional importer; it is not the deferred
+shader settings screen. Choose Done to return to the client.
+
+This is a prerelease. Automated routing and packaging checks do not establish
+that all native rendering options work on every GPU. Keep the previous package
+for rollback; no browser storage or saved worlds are deleted.
 
 If it does not start
 --------------------

@@ -19,8 +19,8 @@ test("release rewrites one pinned Selah client script from a newer live index", 
     ),
     [
       "<html><body>",
-      '<script>window.eaglercraftXClientScriptURL=new URL("selahmc-client-v8.3.8.js?v=5bd2a230",document.baseURI).href;</script>',
-      '<script src="selahmc-client-v8.3.8.js?v=5bd2a230"></script>',
+      '<script>window.eaglercraftXClientScriptURL=new URL("selahmc-client-v8.3.9.js?v=5bd2a230",document.baseURI).href;</script>',
+      '<script src="selahmc-client-v8.3.9.js?v=5bd2a230"></script>',
       "</body></html>",
     ].join("\n"),
   );
