@@ -1134,6 +1134,59 @@ test("shader settings opens the native deferred screen even when the browser bri
   assert.equal(minecraft.w.nv, 1);
 });
 
+test("native shader screen initializes and loads a missing deferred config before GUI setup", () => {
+  const calls = [];
+  const shaderPackInfo = { id: "pack-info" };
+  const resourceManager = { id: "resources" };
+  class NativeDeferredShaderScreen {}
+  class DeferredConfig {}
+  const minecraft = { w: { nv: 0 } };
+  const owner = { f: minecraft };
+  const { fn } = evaluateGenerated("SD_openShaderScreen", {
+    BQs: (screen) => {
+      assert.equal(minecraft.w.xS?.ft, shaderPackInfo);
+      calls.push(["initialize-screen", screen]);
+    },
+    DHk: (client) => {
+      assert.equal(client, minecraft);
+      calls.push(["get-resources"]);
+      return resourceManager;
+    },
+    DP8: () => calls.push(["save"]),
+    HjP: (client, screen) => calls.push(["display", client, screen]),
+    SD_Bep: DeferredConfig,
+    SD_Biu: NativeDeferredShaderScreen,
+    SD_Byw: (config) => {
+      calls.push(["initialize-config", config]);
+      config.ft = null;
+    },
+    SD_Cn1: () => true,
+    "SD_G$M": () => calls.push(["load-screen-class"]),
+    SD_EkU: (config, resources) => {
+      assert.equal(resources, resourceManager);
+      calls.push(["load-pack-info", config]);
+      config.ft = shaderPackInfo;
+    },
+    SD_getEnabled: () => false,
+  });
+
+  fn(owner);
+
+  assert.equal(minecraft.w.xS instanceof DeferredConfig, true);
+  assert.deepEqual(
+    calls.map(([name]) => name),
+    [
+      "save",
+      "load-screen-class",
+      "initialize-config",
+      "get-resources",
+      "load-pack-info",
+      "initialize-screen",
+      "display",
+    ],
+  );
+});
+
 test("shader settings shows the native unsupported screen when deferred rendering is unavailable", () => {
   const calls = [];
   class UnsupportedShaderScreen {}
