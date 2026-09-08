@@ -23,12 +23,12 @@ test("Codespaces launchers pin the current generated client and marker", async (
   const [setup, start, integrationTest] = await Promise.all([
     readFile(new URL(".devcontainer/setup-selah-test.sh", repoRoot), "utf8"),
     readFile(new URL(".devcontainer/start-selah-test.sh", repoRoot), "utf8"),
-    readFile(new URL(".devcontainer/test-v8.3.9-codespace-setup.mjs", repoRoot), "utf8")
+    readFile(new URL(".devcontainer/test-v8.3.10-codespace-setup.mjs", repoRoot), "utf8")
       .catch(() => null),
   ]);
-  const marker = `.ready-v8.3.9-${releaseShortSha}-${bridgeSha.slice(0, 8)}`;
+  const marker = `.ready-v8.3.10-${releaseShortSha}-${bridgeSha.slice(0, 8)}`;
 
-  assert.ok(integrationTest, "the v8.3.9 Codespaces verification must exist");
+  assert.ok(integrationTest, "the v8.3.10 Codespaces verification must exist");
   assert.match(setup, new RegExp(`release_client_sha="${releaseSha}"`));
   assert.match(setup, new RegExp(`release_bridge_sha="${bridgeSha}"`));
   assert.match(integrationTest, new RegExp(bridgeSha));
@@ -41,20 +41,20 @@ test("Codespaces launchers pin the current generated client and marker", async (
 
 test("release workflow verifies and uploads the hash-qualified portable archive", async () => {
   const workflow = await readFile(
-    new URL(".github/workflows/selah-v8.3.9-release.yml", repoRoot),
+    new URL(".github/workflows/selah-v8.3.10-release.yml", repoRoot),
     "utf8",
   ).catch(() => null);
 
-  assert.ok(workflow, "the v8.3.9 release workflow must exist");
-  assert.doesNotMatch(workflow, /SelahMC-v8\.3\.9-Portable-Windows\.zip/);
-  assert.match(workflow, /branches: \["stability-v8\.3\.9"\]/);
-  assert.match(workflow, /sha256sum lifecycle-repair\/dist\/work\/selahmc-client-v8\.3\.9\.js/);
+  assert.ok(workflow, "the v8.3.10 release workflow must exist");
+  assert.doesNotMatch(workflow, /SelahMC-v8\.3\.10-Portable-Windows\.zip/);
+  assert.match(workflow, /branches: \["stability-v8\.3\.10"\]/);
+  assert.match(workflow, /sha256sum lifecycle-repair\/dist\/work\/selahmc-client-v8\.3\.10\.js/);
   assert.match(workflow, /PORTABLE_ARCHIVE/);
   assert.match(workflow, /CLIENT_SHORT_SHA/);
   assert.match(workflow, /for archive in "\$\{PORTABLE_ARCHIVE\}"/);
   assert.match(workflow, /artifacts=\("\$\{PORTABLE_ARCHIVE\}" "\$\{PORTABLE_ARCHIVE\}\.sha256"/);
-  assert.match(workflow, /tag="v8\.3\.9-\$\{CLIENT_SHORT_SHA\}-portable"/);
-  assert.doesNotMatch(workflow, /tag="v8\.3\.9-portable"/);
+  assert.match(workflow, /tag="v8\.3\.10-\$\{CLIENT_SHORT_SHA\}-portable"/);
+  assert.doesNotMatch(workflow, /tag="v8\.3\.10-portable"/);
 });
 
 test("release notes identify the native deferred merge and renderer guards", async () => {
@@ -77,15 +77,15 @@ test("portable instructions do not promise the obsolete unqualified folder", asy
     "utf8",
   );
 
-  assert.doesNotMatch(readme, /SelahMC-v8\.3\.9-Portable-Windows folder/);
+  assert.doesNotMatch(readme, /SelahMC-v8\.3\.10-Portable-Windows folder/);
   assert.match(readme, /extracted SelahMC folder/);
 });
 
-test("portable launcher opens the v8.3.9 identity URL", async () => {
+test("portable launcher opens the v8.3.10 identity URL", async () => {
   const server = await readFile(
     new URL("portable/server/main.go", lifecycleRoot),
     "utf8",
   );
 
-  assert.match(server, /\?portable=v8\.3\.9/);
+  assert.match(server, /\?portable=v8\.3\.10/);
 });

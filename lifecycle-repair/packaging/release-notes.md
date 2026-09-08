@@ -1,6 +1,11 @@
-SelahMC v8.3.9 native deferred shader settings prerelease
+SelahMC v8.3.10 deferred shader GUI compatibility prerelease
 
-Changes from the browser-first v8.3.8 build:
+Changes from v8.3.9:
+- Bridges the separately compiled deferred GUI's draw, button, and close virtual methods to the Selah/Tuff GUI ABI. Opening Shaders now keeps the native screen active instead of showing one black frame and dropping back to the pause menu.
+- Applies the same draw and button bridge to the deferred-not-supported screen.
+- Keeps both sets of TeaVM aliases so calls from the deferred module and the Selah host resolve to the same handlers.
+
+Deferred shader behavior retained from v8.3.9:
 - Restores the native deferred/PBR settings screen already integrated into the Selah/Tuff 1.12.2 client. The Shaders entry no longer redirects to an HTML panel.
 - Keeps the native deferred controls and capability check. The optional importer is available only through the separate `OptiFine Packs...` action; it does not replace the built-in renderer.
 - Preserves the stale-screen dispatch guard and the renderer fixes below.

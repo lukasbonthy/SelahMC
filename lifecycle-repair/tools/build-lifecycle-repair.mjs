@@ -632,6 +632,26 @@ function applyLifecycleRuntimeTransforms(source, replacements) {
     },
   ]);
 
+  // The deferred settings screens were compiled in a separate TeaVM unit.
+  // Its virtual method names (eM/fE/py) do not match the host client's
+  // GuiScreen ABI (c$/el/lw). Keep the deferred aliases for calls inside that
+  // unit and publish host aliases for normal rendering, buttons, and closing.
+  code = replaceExact(
+    code,
+    'SD_BYw,0,CK,[],0,3,[0,0,0],0,["dj",IkZ(SD_DU6),"eM",Ik2(SD_Dyv),"fE",Ik0(SD_C9S)]',
+    'SD_BYw,0,CK,[],0,3,[0,0,0],0,["dj",IkZ(SD_DU6),"eM",Ik2(SD_Dyv),"fE",Ik0(SD_C9S),"c$",Ik2(SD_Dyv),"el",Ik0(SD_C9S)]',
+    1,
+    "deferred unsupported-screen host ABI",
+  );
+  code = replaceExact(
+    code,
+    'SD_Biu,0,CK,[],0,3,[0,0,0],SD_G$M,["dj",IkZ(SD_Eim),"fE",Ik0(SD_Eef),"py",IkZ(SD_CtG),"oq",IkZ(SD_EsD),"g$",Ik2(SD_F0H),"A0",Ik2(SD_FiH),"eM",Ik2(SD_DQr)]',
+    'SD_Biu,0,CK,[],0,3,[0,0,0],SD_G$M,["dj",IkZ(SD_Eim),"fE",Ik0(SD_Eef),"py",IkZ(SD_CtG),"oq",IkZ(SD_EsD),"g$",Ik2(SD_F0H),"A0",Ik2(SD_FiH),"eM",Ik2(SD_DQr),"el",Ik0(SD_Eef),"lw",IkZ(SD_CtG),"c$",Ik2(SD_DQr)]',
+    1,
+    "deferred shader-screen host ABI",
+  );
+  replacements.deferredScreenHostAliases = 2;
+
   return code;
 }
 

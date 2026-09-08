@@ -1088,6 +1088,22 @@ test("camera-and-render validates the current screen before virtual drawing", ()
   );
 });
 
+test("deferred shader screens expose the host GUI virtual-method aliases", () => {
+  assert.ok(
+    transformed.code.includes(
+      'SD_BYw,0,CK,[],0,3,[0,0,0],0,["dj",IkZ(SD_DU6),"eM",Ik2(SD_Dyv),"fE",Ik0(SD_C9S),"c$",Ik2(SD_Dyv),"el",Ik0(SD_C9S)]',
+    ),
+    "the unsupported screen must draw and handle buttons through Selah's host aliases",
+  );
+
+  assert.ok(
+    transformed.code.includes(
+      'SD_Biu,0,CK,[],0,3,[0,0,0],SD_G$M,["dj",IkZ(SD_Eim),"fE",Ik0(SD_Eef),"py",IkZ(SD_CtG),"oq",IkZ(SD_EsD),"g$",Ik2(SD_F0H),"A0",Ik2(SD_FiH),"eM",Ik2(SD_DQr),"el",Ik0(SD_Eef),"lw",IkZ(SD_CtG),"c$",Ik2(SD_DQr)]',
+    ),
+    "the native screen must handle draw, button, and close events through Selah's host aliases",
+  );
+});
+
 test("shader settings opens the native deferred screen even when the browser bridge exists", () => {
   const calls = [];
   class NativeDeferredShaderScreen {}

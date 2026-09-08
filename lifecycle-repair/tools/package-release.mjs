@@ -18,7 +18,7 @@ import { transformOptiFineBridge } from "./patch-optifine-bridge.mjs";
 const execFileAsync = promisify(execFile);
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
-export const RELEASE_NAME = "SelahMC-v8.3.9-Lifecycle-Transaction";
+export const RELEASE_NAME = "SelahMC-v8.3.10-Lifecycle-Transaction";
 export const OPTIFINE_BRIDGE_FILE = "selah-optifine-bridge-v8.3.3.js";
 
 function sha256(value) {
@@ -34,7 +34,7 @@ export function rewriteClientScript(index, bundleSha256) {
       `index client script: expected 1, found ${matches.length}`,
     );
   }
-  const clientURL = `selahmc-client-v8.3.9.js?v=${bundleSha256.slice(0, 8)}`;
+  const clientURL = `selahmc-client-v8.3.10.js?v=${bundleSha256.slice(0, 8)}`;
   const rewritten = index.replace(clientScriptPattern, `src="${clientURL}"`);
   // Cni uses this supported option before attempting stack-based source guessing.
   const tagStart = rewritten.lastIndexOf("<script", rewritten.indexOf(`src="${clientURL}"`));
@@ -120,7 +120,7 @@ export async function buildRelease(options = {}) {
     "index.html": patchedIndex,
     "install.sh": installerSource,
     [OPTIFINE_BRIDGE_FILE]: transformedBridge.code,
-    "selahmc-client-v8.3.9.js": transformed.code,
+    "selahmc-client-v8.3.10.js": transformed.code,
   };
   for (const [name, contents] of Object.entries(files)) {
     await writeFile(join(releaseDirectory, name), contents, "utf8");
@@ -138,7 +138,7 @@ export async function buildRelease(options = {}) {
 
   await execFileAsync(
     process.execPath,
-    ["--check", join(releaseDirectory, "selahmc-client-v8.3.9.js")],
+    ["--check", join(releaseDirectory, "selahmc-client-v8.3.10.js")],
     { encoding: "utf8" },
   );
   await execFileAsync(
@@ -154,7 +154,7 @@ export async function buildRelease(options = {}) {
     "index.html",
     "install.sh",
     OPTIFINE_BRIDGE_FILE,
-    "selahmc-client-v8.3.9.js",
+    "selahmc-client-v8.3.10.js",
   ];
   for (const name of releaseFiles) {
     await utimes(join(releaseDirectory, name), stableTime, stableTime);

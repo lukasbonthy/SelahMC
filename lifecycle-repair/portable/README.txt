@@ -1,8 +1,8 @@
-SelahMC v8.3.9 Portable for Windows
+SelahMC v8.3.10 Portable for Windows
 ===================================
 
 This is the no-install school-PC build. It includes the complete SelahMC
-v8.3.9 client, its 1.12.2 asset pack, plugins, launcher images, and portable
+v8.3.10 client, its 1.12.2 asset pack, plugins, launcher images, and portable
 localhost servers for Windows x64 and Windows ARM64.
 
 How to start
@@ -26,7 +26,9 @@ Shader settings
 The Shaders entry opens the native deferred/PBR settings in the Selah client.
 The built-in renderer and its original controls are retained. The separate
 OptiFine Packs... action opens the optional importer; it is not the deferred
-shader settings screen. Choose Done to return to the client.
+shader settings screen. Version 8.3.10 fixes the black flash and pause-menu
+fallback caused by mismatched GUI method names. Choose Done to return to the
+client.
 
 This is a prerelease. Automated routing and packaging checks do not establish
 that all native rendering options work on every GPU. Keep the previous package
