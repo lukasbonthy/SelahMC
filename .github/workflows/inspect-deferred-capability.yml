@@ -1,0 +1,37 @@
+name: Inspect deferred capability gate
+
+on:
+  push:
+    branches: ["inspect-v8.3.11"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Download pinned client
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 https://selahmc.me/client/selahmc-client-v8.3.3.js --output client.js
+      - name: Print deferred capability function
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from "node:fs";
+          const source = readFileSync("client.js", "utf8");
+          const signature = "function SD_Cn1(";
+          const start = source.indexOf(signature);
+          const next = source.indexOf("\\nfunction ", start + signature.length);
+          console.log("SD_Cn1 start", start, "end", next);
+          console.log(source.slice(start, next < 0 ? source.length : next));
+          for (const needle of ["EXT_color_buffer_float", "EXT_color_buffer_half_float", "checkFramebufferStatus", "RGBA16F"]) {
+            console.log("needle", needle, "count", source.split(needle).length - 1);
+          }
+          NODE
