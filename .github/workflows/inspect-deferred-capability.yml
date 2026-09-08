@@ -24,46 +24,54 @@ jobs:
           set -euo pipefail
           mkdir -p recovered-live
           curl --fail --location --retry 3 https://selahmc.me/client/selahmc-client-v8.3.3.js --output recovered-live/selahmc-client-v8.3.3.js
-      - name: Print deferred GUI functions and class layouts
+      - name: Print config field producers and consumers
         run: |
           node --input-type=module <<'NODE'
           import { readFileSync } from "node:fs";
           import { transformBundle } from "./lifecycle-repair/tools/build-lifecycle-repair.mjs";
+          import { extractGeneratedFunction } from "./lifecycle-repair/tests/helpers/extract-generated-function.mjs";
           const source = readFileSync("recovered-live/selahmc-client-v8.3.3.js", "utf8");
           const barrier = readFileSync("lifecycle-repair/src/world-lifecycle-barrier.js", "utf8");
           const { code } = transformBundle(source, barrier);
 
-          function fn(name) {
-            const signature = `function ${name}(`;
-            const start = code.indexOf(signature);
-            const next = code.indexOf("\\nfunction ", start + signature.length);
-            console.log(`--- ${name} start=${start} end=${next} ---`);
-            console.log(code.slice(start, next < 0 ? code.length : next));
-          }
-
           for (const name of [
-            "SD_BQs", "BQs", "SD_BUt", "SD_Eim", "SD_DSn", "SD_Eef",
-            "SD_CtG", "SD_EsD", "SD_F0H", "SD_FiH", "SD_DQr",
+            "SD_BUt", "SD_Eim", "SD_G$M", "SD_G$N", "SD_EkU",
             "SD_openShaderScreen"
-          ]) fn(name);
-
-          for (const name of ["SD_Biu", "CK", "SD_G$M"]) {
-            const needle = `(${name},`;
-            let from = 0;
-            while ((from = code.indexOf(needle, from)) >= 0) {
-              console.log(`--- metadata around ${name} @ ${from} ---`);
-              console.log(code.slice(Math.max(0, from - 500), from + 1500));
-              from += needle.length;
+          ]) {
+            try {
+              console.log(`--- ${name} ---`);
+              console.log(extractGeneratedFunction(code, name));
+            } catch (err) {
+              console.log(`missing ${name}: ${err.message}`);
             }
           }
 
-          const segments = code.split("\nfunction ");
-          const matches = segments
-            .filter((segment) => segment.includes(".ft"))
-            .filter((segment) => /^SD_/.test(segment))
-            .slice(0, 80);
-          console.log(`--- SD functions containing .ft: ${matches.length} ---`);
-          for (const segment of matches) {
-            console.log("function " + segment.slice(0, 2500));
+          function printContaining(needle) {
+            const seen = new Set();
+            let cursor = 0;
+            let count = 0;
+            while ((cursor = code.indexOf(needle, cursor)) >= 0) {
+              let start = code.lastIndexOf("\nfunction ", cursor);
+              start = start < 0 ? 0 : start + 1;
+              let end = code.indexOf("\nfunction ", cursor);
+              end = end < 0 ? code.length : end;
+              const name = /^function ([^(]+)/.exec(code.slice(start, start + 120))?.[1] ?? `offset-${cursor}`;
+              if (!seen.has(name)) {
+                seen.add(name);
+                count++;
+                console.log(`--- contains ${needle}: ${name} @ ${cursor} ---`);
+                console.log(code.slice(start, Math.min(end, start + 12000)));
+              }
+              cursor += needle.length;
+            }
+            console.log(`--- total functions containing ${needle}: ${count} ---`);
+          }
+
+          for (const needle of [".xS", ".ft", "xS=", ".ft="]) printContaining(needle);
+
+          for (const needle of ["SD_Biu,0,CK", "SD_BfL,0,", "SD_G$M"]) {
+            const at = code.indexOf(needle);
+            console.log(`--- raw ${needle} @ ${at} ---`);
+            console.log(code.slice(Math.max(0, at - 1200), at + 5000));
           }
           NODE
