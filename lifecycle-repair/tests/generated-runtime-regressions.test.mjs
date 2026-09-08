@@ -1293,3 +1293,112 @@ test("sky mesh cleanup clears each deleted resource and is repeatable", () => {
   fn(mesh);
   assert.equal(deleted.size, 4);
 });
+
+
+function makeHDRProbeDocument(options = {}) {
+  const {
+    webgl2 = true,
+    colorBufferFloat = true,
+    colorBufferHalfFloat = false,
+    complete = true,
+  } = options;
+  const gl = {
+    FRAMEBUFFER: 0x8d40,
+    TEXTURE_2D: 0x0de1,
+    COLOR_ATTACHMENT0: 0x8ce0,
+    FRAMEBUFFER_COMPLETE: 0x8cd5,
+    RGBA: 0x1908,
+    RGBA16F: 0x881a,
+    RGBA32F: 0x8814,
+    HALF_FLOAT: 0x140b,
+    FLOAT: 0x1406,
+    NEAREST: 0x2600,
+    getExtension(name) {
+      if (name === "EXT_color_buffer_float" && colorBufferFloat) return {};
+      if (name === "EXT_color_buffer_half_float" && colorBufferHalfFloat) return {};
+      return null;
+    },
+    createTexture() { return {}; },
+    bindTexture() {},
+    texParameteri() {},
+    texImage2D() {},
+    createFramebuffer() { return {}; },
+    bindFramebuffer() {},
+    framebufferTexture2D() {},
+    checkFramebufferStatus() {
+      return complete ? this.FRAMEBUFFER_COMPLETE : 0;
+    },
+    deleteTexture() {},
+    deleteFramebuffer() {},
+  };
+  return {
+    document: {
+      createElement(name) {
+        assert.equal(name, "canvas");
+        return {
+          getContext(kind) {
+            return webgl2 && kind === "webgl2" ? gl : null;
+          },
+        };
+      },
+    },
+  };
+}
+
+test("deferred HDR fallback accepts a complete WebGL2 floating-point framebuffer", () => {
+  const context = {
+    ...makeHDRProbeDocument(),
+    console: { warn() {} },
+  };
+  vm.runInNewContext(
+    `${barrierSource}
+result = SD_deferredCapabilityFallback();`,
+    context,
+  );
+  assert.equal(context.result, true);
+});
+
+test("deferred HDR fallback rejects WebGL1, missing extensions, and incomplete framebuffers", () => {
+  for (const options of [
+    { webgl2: false },
+    { colorBufferFloat: false, colorBufferHalfFloat: false },
+    { complete: false },
+  ]) {
+    const context = {
+      ...makeHDRProbeDocument(options),
+      console: { warn() {} },
+    };
+    vm.runInNewContext(
+      `${barrierSource}
+result = SD_deferredCapabilityFallback();`,
+      context,
+    );
+    assert.equal(context.result, false);
+  }
+});
+
+test("deferred capability gate uses the guarded browser probe only after internal flags reject", () => {
+  const context = {
+    ...makeHDRProbeDocument(),
+    B: () => false,
+    DI: () => ({ l: () => null, s: () => undefined }),
+    Gs: () => {
+      throw new Error("invalid TeaVM state");
+    },
+    Gt: () => false,
+    Fj: () => undefined,
+    Iv7: false,
+    Iv8: false,
+    SD_HWV: false,
+    SD_HWW: false,
+    console: { warn() {} },
+  };
+  vm.runInNewContext(
+    `${barrierSource}
+${extractGeneratedFunction(transformed.code, "SD_CjF_original")}
+${extractGeneratedFunction(transformed.code, "SD_CjF")}
+result = SD_CjF();`,
+    context,
+  );
+  assert.equal(context.result, 1);
+});
