@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+TARGET_DIR="${SELAH_CLIENT_DIR:-/srv/selahmc/client}"
+BACKUP_ROOT="${SELAH_BACKUP_DIR:-/home/ubuntu/selahmc-client-backups}"
+CLIENT_FILE="selahmc-client-v8.3.10.js"
+BRIDGE_FILE="selah-optifine-bridge-v8.3.3.js"
+
+cd "$SCRIPT_DIR"
+
+for required_file in SHA256SUMS README.txt index.html install.sh "$BRIDGE_FILE" "$CLIENT_FILE"; do
+	if [[ ! -f "$required_file" ]]; then
+		echo "Missing package file: $required_file" >&2
+		exit 1
+	fi
+done
+
+sha256sum -c SHA256SUMS
+
+if [[ ! -d "$TARGET_DIR" ]]; then
+	echo "SelahMC client directory does not exist: $TARGET_DIR" >&2
+	exit 1
+fi
+
+timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+BACKUP_DIR="$BACKUP_ROOT/$timestamp"
+if [[ -e "$BACKUP_DIR" ]]; then
+	BACKUP_DIR="$BACKUP_ROOT/$timestamp-$$"
+fi
+mkdir -p "$BACKUP_DIR"
+
+for current_file in \
+	"$TARGET_DIR/index.html" \
+	"$TARGET_DIR/selahmc-client-v8.3.3.js" \
+	"$TARGET_DIR/selahmc-client-v8.3.4.js" \
+	"$TARGET_DIR/selahmc-client-v8.3.5.js" \
+	"$TARGET_DIR/$BRIDGE_FILE" \
+	"$TARGET_DIR/selahmc-client-v8.3.8.js" \
+	"$TARGET_DIR/selahmc-client-v8.3.10.js"; do
+	if [[ -f "$current_file" ]]; then
+		cp -p "$current_file" "$BACKUP_DIR/"
+	fi
+done
+
+temporary_client="$TARGET_DIR/.$CLIENT_FILE.$$"
+temporary_bridge="$TARGET_DIR/.$BRIDGE_FILE.$$"
+temporary_index="$TARGET_DIR/.index.html.$$"
+cleanup() {
+	rm -f "$temporary_client" "$temporary_bridge" "$temporary_index"
+}
+trap cleanup EXIT
+
+install -m 0644 "$CLIENT_FILE" "$temporary_client"
+install -m 0644 "$BRIDGE_FILE" "$temporary_bridge"
+install -m 0644 index.html "$temporary_index"
+mv -f "$temporary_client" "$TARGET_DIR/$CLIENT_FILE"
+mv -f "$temporary_bridge" "$TARGET_DIR/$BRIDGE_FILE"
+mv -f "$temporary_index" "$TARGET_DIR/index.html"
+trap - EXIT
+
+expected_client_hash="$(awk -v file="$CLIENT_FILE" '$2 == file { print $1 }' SHA256SUMS)"
+actual_client_hash="$(sha256sum "$TARGET_DIR/$CLIENT_FILE" | awk '{ print $1 }')"
+if [[ -z "$expected_client_hash" || "$actual_client_hash" != "$expected_client_hash" ]]; then
+	echo "Installed client hash verification failed" >&2
+	exit 1
+fi
+
+expected_bridge_hash="$(awk -v file="$BRIDGE_FILE" '$2 == file { print $1 }' SHA256SUMS)"
+actual_bridge_hash="$(sha256sum "$TARGET_DIR/$BRIDGE_FILE" | awk '{ print $1 }')"
+if [[ -z "$expected_bridge_hash" || "$actual_bridge_hash" != "$expected_bridge_hash" ]]; then
+	echo "Installed OptiFine bridge hash verification failed" >&2
+	exit 1
+fi
+
+if ! grep -Fq "selahmc-client-v8.3.10.js?v=${expected_client_hash:0:8}" "$TARGET_DIR/index.html"; then
+	echo "Installed index does not reference the verified client hash" >&2
+	exit 1
+fi
+if ! grep -Fq "$BRIDGE_FILE?v=${expected_bridge_hash:0:8}" "$TARGET_DIR/index.html"; then
+	echo "Installed index does not reference the verified OptiFine bridge hash" >&2
+	exit 1
+fi
+
+echo
+echo "Deployment complete: $TARGET_DIR/$CLIENT_FILE"
+echo "Backup created: $BACKUP_DIR"
+echo "Rollback files (run in this order):"
+for rollback_file in "$BRIDGE_FILE" "$CLIENT_FILE" index.html; do
+	if [[ -f "$BACKUP_DIR/$rollback_file" ]]; then
+		printf 'sudo install -m 0644 %q %q\n' \
+			"$BACKUP_DIR/$rollback_file" "$TARGET_DIR/$rollback_file"
+	fi
+done
