@@ -632,6 +632,23 @@ function applyLifecycleRuntimeTransforms(source, replacements) {
     },
   ]);
 
+  // TeaVM's internal WebGL capability bits can be stale when a browser context
+  // exposes the extensions after initialization. Keep the original conservative
+  // flags, then require a real complete floating-point WebGL2 framebuffer before
+  // enabling the native deferred screen.
+  code = transformGeneratedFunction(code, "SD_CjF", (functionSource) => {
+    const renamed = replaceExact(
+      functionSource,
+      "function SD_CjF(",
+      "function SD_CjF_original(",
+      1,
+      "deferred capability gate rename",
+    );
+    replacements.deferredCapabilityFallback = 1;
+    return `${renamed}
+function SD_CjF(){var SD_capabilityResult=SD_CjF_original.apply(this,arguments);if(SD_capabilityResult===null||SD_capabilityResult===undefined)return SD_capabilityResult;if(SD_capabilityResult)return SD_capabilityResult;return SD_deferredCapabilityFallback()?1:0;}`;
+  });
+
   // The deferred settings screens were compiled in a separate TeaVM unit.
   // Its virtual method names (eM/fE/py) do not match the host client's
   // GuiScreen ABI (c$/el/lw). Keep the deferred aliases for calls inside that

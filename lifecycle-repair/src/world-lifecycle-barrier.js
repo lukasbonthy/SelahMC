@@ -11,6 +11,81 @@ var SD_worldLifecycleDiagnostics = {
 
 var SD_worldLifecycleStateKey = "__selahWorldLifecycleState";
 
+function SD_deferredCapabilityFallback() {
+	try {
+		if(typeof document === "undefined" || document === null ||
+				typeof document.createElement !== "function") return false;
+		var canvas = document.createElement("canvas");
+		if(canvas === null || typeof canvas.getContext !== "function") return false;
+		var gl = canvas.getContext("webgl2", {
+			alpha: false,
+			antialias: false,
+			depth: false,
+			stencil: false,
+			preserveDrawingBuffer: false
+		});
+		if(gl === null || gl === undefined ||
+				typeof gl.getExtension !== "function") return false;
+
+		var colorBufferFloat = gl.getExtension("EXT_color_buffer_float");
+		var colorBufferHalfFloat = gl.getExtension("EXT_color_buffer_half_float");
+		if(colorBufferFloat === null && colorBufferHalfFloat === null) return false;
+
+		var texture = null;
+		var framebuffer = null;
+		try {
+			texture = gl.createTexture();
+			framebuffer = gl.createFramebuffer();
+			if(texture === null || framebuffer === null) return false;
+			gl.bindTexture(gl.TEXTURE_2D, texture);
+			if(typeof gl.texParameteri === "function") {
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			}
+			var formats = [];
+			if(colorBufferFloat !== null) formats.push([gl.RGBA32F, gl.FLOAT]);
+			formats.push([gl.RGBA16F, gl.HALF_FLOAT]);
+			gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+			for(var i=0;i<formats.length;i++) {
+				try {
+					gl.texImage2D(gl.TEXTURE_2D, 0, formats[i][0], 1, 1, 0,
+							gl.RGBA, formats[i][1], null);
+					gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+							gl.TEXTURE_2D, texture, 0);
+					if(gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE) {
+						return true;
+					}
+				} catch(SD_deferredCapabilityFormatError) {
+				}
+			}
+			return false;
+		} finally {
+			try {
+				if(typeof gl.bindFramebuffer === "function") {
+					gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+				}
+			} catch(SD_deferredCapabilityUnbindError) {
+			}
+			try {
+				if(typeof gl.deleteFramebuffer === "function" && framebuffer !== null) {
+					gl.deleteFramebuffer(framebuffer);
+				}
+			} catch(SD_deferredCapabilityFramebufferError) {
+			}
+			try {
+				if(typeof gl.deleteTexture === "function" && texture !== null) {
+					gl.deleteTexture(texture);
+				}
+			} catch(SD_deferredCapabilityTextureError) {
+			}
+		}
+	} catch(SD_deferredCapabilityError) {
+		return false;
+	}
+}
+
+
+
 function SD_worldLifecycleGetState(a, b) {
 	if(a === null || a === undefined) return null;
 	var c = a[SD_worldLifecycleStateKey];

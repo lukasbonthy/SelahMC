@@ -1260,6 +1260,7 @@ test("real bundle records all centralized and resume-point gates exactly once", 
   assert.equal(transformed.replacements.runTickKeyboard, 2);
   assert.equal(transformed.replacements.deferredRenderChunkBaseFields, 2);
   assert.equal(transformed.replacements.integratedServerSettingsGuards, 3);
+  assert.equal(transformed.replacements.deferredCapabilityFallback, 1);
 });
 
 // Regression: the local-player fast path must not prevent remote entity lookup.
