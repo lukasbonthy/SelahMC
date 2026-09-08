@@ -24,3 +24,4 @@ The compatible loader and EPK remain hash-pinned v8.3.3 assets. Their version nu
 Extract the Windows ZIP fully, then run START_SELAHMC.cmd. Keep the prior package for rollback. Browser world storage is separate per port; use the original port to access existing worlds.
 
 These changes address reproduced code defects. Full gameplay, resource-pack reload, and the entire reported WebGL error sequence have not been validated in a live browser. This is a prerelease, not a claim that every reported error is resolved.
+- Corrects a false shader-unavailable result by probing a real WebGL2 floating-point HDR framebuffer when the cached capability bits reject the context. Unsupported devices still stay on the native unavailable screen.
