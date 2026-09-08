@@ -1107,7 +1107,7 @@ test("deferred shader screens expose the host GUI virtual-method aliases", () =>
 test("shader settings opens the native deferred screen even when the browser bridge exists", () => {
   const calls = [];
   class NativeDeferredShaderScreen {}
-  const minecraft = { w: { nv: 0 } };
+  const minecraft = { w: { nv: 0, xS: { ft: {} } } };
   const owner = { f: minecraft };
   const { fn } = evaluateGenerated("SD_openShaderScreen", {
     BQs: (screen) => calls.push(["initialize", screen]),
@@ -1185,6 +1185,31 @@ test("native shader screen initializes and loads a missing deferred config befor
       "display",
     ],
   );
+});
+
+test("deferred resource reload creates the config before loading shader-pack metadata", () => {
+  const shaderPackInfo = { id: "pack-info" };
+  const resourceManager = { id: "resources" };
+  class DeferredConfig {}
+  const minecraft = { w: { nv: 1 }, yn: null };
+  const loaded = [];
+  const { fn } = evaluateGenerated("SD_CJB", {
+    Fw7: () => minecraft,
+    SD_Bep: DeferredConfig,
+    SD_Byw: (config) => {
+      config.ft = null;
+    },
+    SD_EkU: (config, resources) => {
+      loaded.push([config, resources]);
+      if (config) config.ft = shaderPackInfo;
+    },
+  });
+
+  fn({}, resourceManager);
+
+  assert.equal(minecraft.w.xS instanceof DeferredConfig, true);
+  assert.equal(minecraft.w.xS.ft, shaderPackInfo);
+  assert.deepEqual(loaded, [[minecraft.w.xS, resourceManager]]);
 });
 
 test("shader settings shows the native unsupported screen when deferred rendering is unavailable", () => {
@@ -1314,6 +1339,7 @@ test("real bundle records all centralized and resume-point gates exactly once", 
   assert.equal(transformed.replacements.deferredRenderChunkBaseFields, 2);
   assert.equal(transformed.replacements.integratedServerSettingsGuards, 3);
   assert.equal(transformed.replacements.deferredCapabilityFallback, 1);
+  assert.equal(transformed.replacements.deferredConfigBootstrap, 2);
 });
 
 // Regression: the local-player fast path must not prevent remote entity lookup.
