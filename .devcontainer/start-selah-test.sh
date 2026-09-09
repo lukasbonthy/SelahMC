@@ -5,7 +5,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 site_root="${repo_root}/.selah-test"
 diagnostics_log="${repo_root}/.selah-diagnostics.log"
 
-if [[ ! -f "${site_root}/.ready-v8.3.10-94c4bc02-43daa2d9" ]]; then
+if [[ ! -f "${site_root}/.ready-v8.3.10-f0ba8852-43daa2d9" ]]; then
   bash "${repo_root}/.devcontainer/setup-selah-test.sh"
 fi
 

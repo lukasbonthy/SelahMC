@@ -12,9 +12,9 @@ stage="$(mktemp -d "${repo_root}/.selah-stage-XXXXXX")"
 base_client_sha="6e775ed50e83a6ba976aea593e0ef70ed74b662f652f3f47f616499a85005ba4"
 base_index_sha="bf37f956c331a6275ec8a5d7a6741b55aac77ffead7330efeae58e252b723cfa"
 base_bridge_sha="9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd"
-release_client_sha="94c4bc0291ea67e5b7ad28e2005f42e708770d641dd9de999200354ce9aa7c06"
+release_client_sha="f0ba88523e25db18480af089e3bc7a6d1a95e4ca1bb8d9911b43649ee02e8e18"
 release_bridge_sha="43daa2d91bd9927b736543cd418766c383a037faec2a3d5725d7b1b786e62101"
-release_marker=".ready-v8.3.10-94c4bc02-43daa2d9"
+release_marker=".ready-v8.3.10-f0ba8852-43daa2d9"
 
 require_repo_child() {
   case "$1" in
@@ -89,6 +89,7 @@ echo "Running SelahMC lifecycle regression suite"
   cd "${repair_root}"
   node --test \
     tests/bundle-transformer.test.mjs \
+    tests/deferred-runtime-contracts.test.mjs \
     tests/generated-function-extractor.test.mjs \
     tests/generated-runtime-regressions.test.mjs \
     tests/package-installer.test.mjs \
