@@ -1,0 +1,99 @@
+name: Verify deferred runtime candidate
+
+on:
+  pull_request:
+    branches: ["stability-v8.3.10"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.0"
+          cache: false
+
+      - name: Download pinned client inputs
+        run: |
+          set -euo pipefail
+          mkdir -p recovered-live
+          curl --fail --location --retry 3 \
+            https://selahmc.me/client/selahmc-client-v8.3.3.js \
+            --output recovered-live/selahmc-client-v8.3.3.js
+          curl --fail --location --retry 3 \
+            https://selahmc.me/client/index.html \
+            --output recovered-live/index.html
+          curl --fail --location --retry 3 \
+            https://selahmc.me/client/selah-optifine-bridge-v8.3.3.js \
+            --output recovered-live/selah-optifine-bridge-v8.3.3.js
+          sha256sum --check <<'SUMS'
+          6e775ed50e83a6ba976aea593e0ef70ed74b662f652f3f47f616499a85005ba4  recovered-live/selahmc-client-v8.3.3.js
+          bf37f956c331a6275ec8a5d7a6741b55aac77ffead7330efeae58e252b723cfa  recovered-live/index.html
+          9ecb0a64045381ae539428178d6db324a68a48ff9bb54bb5fafc57a5921dbddd  recovered-live/selah-optifine-bridge-v8.3.3.js
+          SUMS
+
+      - name: Verify and package
+        working-directory: lifecycle-repair
+        run: |
+          set -euo pipefail
+          npm test
+          (cd portable/server && go test ./... && go vet ./...)
+          npm run build
+          npm run package
+          npm run package:portable
+
+
+      - name: Retain unverified development artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: deferred-runtime-candidate
+          path: lifecycle-repair/dist/*.zip
+          if-no-files-found: error
+
+  windows-runtime:
+    needs: verify
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: deferred-runtime-candidate
+          path: candidate-artifacts
+      - name: Extract the shipped portable package
+        shell: pwsh
+        run: |
+          $archives = @(Get-ChildItem candidate-artifacts/*-Portable-Windows.zip)
+          if ($archives.Count -ne 1) { throw "Expected one portable ZIP" }
+          Expand-Archive $archives[0].FullName -DestinationPath portable-test
+          $roots = @(Get-ChildItem portable-test -Directory)
+          if ($roots.Count -ne 1) { throw "Expected one portable root" }
+          "SELAH_TEST_ROOT=$($roots[0].FullName)" >> $env:GITHUB_ENV
+      - name: Exercise the Windows executable under concurrent file requests
+        shell: pwsh
+        run: node lifecycle-repair/tools/test-portable-windows.mjs "$env:SELAH_TEST_ROOT"
+      - name: Retain server output including fatal runtime diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portable-windows-runtime-logs
+          path: portable-runtime-logs
+          if-no-files-found: warn

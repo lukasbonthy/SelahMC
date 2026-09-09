@@ -36,9 +36,9 @@ test("Codespaces setup publishes the verified v8.3.10 lifecycle client", async (
 
   assert.equal(
     sha256(client),
-    "94c4bc0291ea67e5b7ad28e2005f42e708770d641dd9de999200354ce9aa7c06",
+    "f0ba88523e25db18480af089e3bc7a6d1a95e4ca1bb8d9911b43649ee02e8e18",
   );
-  assert.match(index, /selahmc-client-v8\.3\.10\.js\?v=94c4bc02/);
+  assert.match(index, /selahmc-client-v8\.3\.10\.js\?v=f0ba8852/);
   assert.equal(
     sha256(bridge),
     "43daa2d91bd9927b736543cd418766c383a037faec2a3d5725d7b1b786e62101",
@@ -46,7 +46,7 @@ test("Codespaces setup publishes the verified v8.3.10 lifecycle client", async (
   assert.match(index, /selah-optifine-bridge-v8\.3\.3\.js\?v=43daa2d9/);
   assert.doesNotMatch(index, /selah-diagnostics\.js|selahmc-client-v8\.3\.3\.js/);
   assert.equal(
-    (await stat(join(siteRoot, ".ready-v8.3.10-94c4bc02-43daa2d9"))).isFile(),
+    (await stat(join(siteRoot, ".ready-v8.3.10-f0ba8852-43daa2d9"))).isFile(),
     true,
   );
   await assert.rejects(stat(join(siteRoot, "selahmc-client-v8.3.3.js")), {

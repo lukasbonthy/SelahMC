@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { patchDeferredContracts } from "./patch-deferred-contracts.mjs";
 
 export const EXPECTED_BASE_SHA256 =
   "6e775ed50e83a6ba976aea593e0ef70ed74b662f652f3f47f616499a85005ba4";
@@ -721,6 +722,8 @@ export function transformBundle(source, barrierSource, options = {}) {
 
   if (options.applyLifecycleTransforms !== false) {
     code = applyLifecycleRuntimeTransforms(code, replacements);
+    code = patchDeferredContracts(code, { replaceExact, transformGeneratedFunction });
+    replacements.deferredRuntimeContracts = 5;
   }
 
   return {
