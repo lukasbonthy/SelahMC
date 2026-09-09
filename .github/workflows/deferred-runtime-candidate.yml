@@ -63,3 +63,37 @@ jobs:
           name: deferred-runtime-candidate
           path: lifecycle-repair/dist/*.zip
           if-no-files-found: error
+
+  windows-runtime:
+    needs: verify
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: deferred-runtime-candidate
+          path: candidate-artifacts
+      - name: Extract the shipped portable package
+        shell: pwsh
+        run: |
+          $archives = @(Get-ChildItem candidate-artifacts/*-Portable-Windows.zip)
+          if ($archives.Count -ne 1) { throw "Expected one portable ZIP" }
+          Expand-Archive $archives[0].FullName -DestinationPath portable-test
+          $roots = @(Get-ChildItem portable-test -Directory)
+          if ($roots.Count -ne 1) { throw "Expected one portable root" }
+          "SELAH_TEST_ROOT=$($roots[0].FullName)" >> $env:GITHUB_ENV
+      - name: Exercise the Windows executable under concurrent file requests
+        shell: pwsh
+        run: node lifecycle-repair/tools/test-portable-windows.mjs "$env:SELAH_TEST_ROOT"
+      - name: Retain server output including fatal runtime diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portable-windows-runtime-logs
+          path: portable-runtime-logs
+          if-no-files-found: warn
